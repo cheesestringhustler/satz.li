@@ -1,22 +1,23 @@
-import { useState } from 'react';
 import { ThemeProvider } from "@/components/theme-provider"
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { ModeToggle } from '@/components/mode-toggle';
+import TextOptimizer from '@/containers/textoptimizer';
 import './App.css';
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div>
-        <Input type="text" />
-        <Button>Check</Button>
-      </div>
-      <div>
-        <Textarea />
-      </div>
-      <ModeToggle />
+      <header className="w-full flex p-4 justify-between items-center">
+        <h1>txo</h1>
+        <div className="flex items-center gap-2">
+          <ModeToggle />
+          <Button>Login</Button>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4">
+        <TextOptimizer />
+      </main>
     </ThemeProvider>
   )
 }
