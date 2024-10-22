@@ -1,5 +1,5 @@
 // @deno-types="npm:@types/express@4"
-import express, { Response } from "npm:express@4";
+import express from "npm:express@4";
 import { optimizeText } from "./optimize.ts";
 
 const app = express();
