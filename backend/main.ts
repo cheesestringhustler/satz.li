@@ -8,8 +8,8 @@ const port = 3000;
 app.use(express.json());
 
 app.post('/api/optimize', async (req, res) => {
-    const { text } = req.body;
-    await optimizeText(text, res);
+    const { text, language, customPrompt } = req.body;
+    await optimizeText(text, language, customPrompt, res);
 });
 
 app.listen(port, () => {

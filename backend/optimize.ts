@@ -1,26 +1,29 @@
 import { ChatOpenAI } from "npm:@langchain/openai";
-import { ChatPromptTemplate } from "npm:@langchain/core/prompts";
+import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from "npm:@langchain/core/prompts";
 import { StringOutputParser } from "npm:@langchain/core/output_parsers";
+import { HumanMessage } from "npm:@langchain/core/messages";
 import { Response } from "npm:express@4";
 
 const model = new ChatOpenAI({ 
   modelName: "gpt-4o-mini"
 });
 
-const template = `You are a helpful assistant that improves German texts. 
-Your task is to correct any grammatical errors, improve the style, and make 
-the text more natural and fluent. Please provide only the improved version of the text.
+const basePrompt = `Correct the text to have proper spelling, grammar, and punctuation`; 
+const systemPrompt = `${basePrompt}. The language of the text is {language}.` 
+const userPrompt = `${basePrompt}. Return only the corrected text. Text to correct:\n{text}`;
 
-Text to improve: {text}`;
-
-const prompt = ChatPromptTemplate.fromTemplate(template);
+const prompt = ChatPromptTemplate.fromMessages([
+    SystemMessagePromptTemplate.fromTemplate(systemPrompt),
+    new MessagesPlaceholder("customPrompt"),
+    HumanMessagePromptTemplate.fromTemplate(userPrompt),
+]);
 const parser = new StringOutputParser();
 // @ts-ignore ChatOpenAI type
 const chain = prompt.pipe(model).pipe(parser);
 
-export async function optimizeText(text: string, res: Response) {
+export async function optimizeText(text: string, language: string, customPrompt: string, res: Response) {
     try {
-        const stream = await chain.stream({ text });
+        const stream = await chain.stream({ text, language, customPrompt: new HumanMessage({ content: "Custom instructions: "+customPrompt }) });
 
         res.header('Content-Type', 'text/plain');
         res.header('Transfer-Encoding', 'chunked');
@@ -32,6 +35,9 @@ export async function optimizeText(text: string, res: Response) {
                 response.write(chunk);
             }
         }
+
+        console.log(await prompt.formatMessages({ text, language, customPrompt: new HumanMessage({ content: customPrompt }) }));
+
         response.send();
     } catch (error) {
         console.error('Error:', error);

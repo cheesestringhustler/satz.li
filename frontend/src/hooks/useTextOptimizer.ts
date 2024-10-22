@@ -9,8 +9,15 @@ interface Change {
 }
 
 export function useTextOptimizer() {
-    const [originalText, setOriginalText] = useState("Er geht Sonntags nicht gerne einkaufen");
-    const [text, setText] = useState("Er geht Sonntags nicht gerne einkaufen");
+    const [originalText, setOriginalText] = useState("");
+    const [text, setText] = useState(`Dear Mr. Smith,
+
+I received your offer yesterday and would like to get more informations about it. It would be helpful if you could provide me some details, especially regarding the delivery time and payment options.
+
+Please let me know if it is possible to get a discount, since I am interessted in purchasing multiple units. Thank you in advance for your time and assistance.
+
+Kind regards,
+John Doe`);
     const [isLoading, setIsLoading] = useState(false);
     const [changes, setChanges] = useState<Change[]>([]);
     const [optimizedText, setOptimizedText] = useState("");
@@ -28,14 +35,14 @@ export function useTextOptimizer() {
         applyChanges();
     }, [changes]);
 
-    const handleOptimize = async () => {
+    const handleOptimize = async (language: string, customPrompt: string) => {
         setIsLoading(true);
         setChanges([]);
         setIsOptimizationComplete(false);
         setOriginalText(text);
         
         try {
-            const reader = await optimizeText(text);
+            const reader = await optimizeText(text, language, customPrompt);
             let newOptimizedText = '';
 
             while (true) {

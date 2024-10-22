@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTextOptimizer } from '@/hooks/useTextOptimizer';
 import LanguageDropdown from './languageDropdown';
+import languages from '@/assets/languages.json';
 import { useState } from 'react';
 
 function TextOptimizer() {
@@ -14,7 +15,7 @@ function TextOptimizer() {
         handleApplyChanges,
         handleRevertChanges
     } = useTextOptimizer();
-    const [language, setLanguage] = useState('de-ch');
+    const [language, setLanguage] = useState('en');
     const [customPrompt, setCustomPrompt] = useState('');
 
     return (
@@ -34,7 +35,7 @@ function TextOptimizer() {
             </div>
             
             <div className="flex justify-start gap-2">
-                <Button onClick={() => handleOptimize()} disabled={isLoading}>
+                <Button onClick={() => handleOptimize(languages.find(lang => lang.code === language)?.name || '', customPrompt)} disabled={isLoading}>
                     {isLoading ? "Checking..." : "Check Text"}
                 </Button>
                 <div className='flex-1'></div>
