@@ -1,3 +1,4 @@
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTextOptimizer } from '@/hooks/useTextOptimizer';
@@ -13,7 +14,8 @@ function TextOptimizer() {
         handleOptimize,
         handleInput,
         handleApplyChanges,
-        handleRevertChanges
+        handleRevertChanges,
+        handleKeyDown
     } = useTextOptimizer();
     const [language, setLanguage] = useState('en');
     const [customPrompt, setCustomPrompt] = useState('');
@@ -23,14 +25,29 @@ function TextOptimizer() {
             <LanguageDropdown language={language} setLanguage={setLanguage} />
 
             <div className='flex flex-col gap-2'>
-                <Input type="text" placeholder="Provide custom instructions such as 'use passive voice'" value={customPrompt} onChange={(e) => setCustomPrompt(e.target.value)} />
+                <Input 
+                    type="text" 
+                    placeholder="Provide custom instructions such as 'use passive voice'" 
+                    value={customPrompt} 
+                    onChange={(e) => setCustomPrompt(e.target.value)} 
+                />
                 <div
                     ref={editorRef}
                     className="h-64 p-2 text-sm border rounded-md overflow-auto"
                     contentEditable
                     onInput={handleInput}
+                    onKeyDown={handleKeyDown}
+                    onPaste={(e) => {
+                        e.preventDefault();
+                        const text = e.clipboardData.getData('text/plain');
+                        document.getSelection()?.getRangeAt(0).insertNode(document.createTextNode(text));
+                    }}
                     onContextMenu={(e) => e.preventDefault()}
-                    style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
+                    style={{ 
+                        whiteSpace: 'pre-wrap', 
+                        wordWrap: 'break-word',
+                        outline: 'none'
+                    }}
                 />
             </div>
             

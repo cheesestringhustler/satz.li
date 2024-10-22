@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { optimizeText } from '@/services/api';
 import { diff_match_patch } from 'diff-match-patch';
 
@@ -22,6 +22,7 @@ John Doe`);
     const [changes, setChanges] = useState<Change[]>([]);
     const [optimizedText, setOptimizedText] = useState("");
     const [isOptimizationComplete, setIsOptimizationComplete] = useState(false);
+    const [cursorPosition, setCursorPosition] = useState<number | null>(null);
     const editorRef = useRef<HTMLDivElement>(null);
     const dmp = new diff_match_patch();
 
@@ -104,7 +105,7 @@ John Doe`);
         setChanges(newChanges);
     };
 
-    const applyChanges = () => {
+    const applyChanges = useCallback(() => {
         if (!editorRef.current) return;
 
         let result = text;
@@ -123,16 +124,70 @@ John Doe`);
         });
 
         editorRef.current.innerHTML = result;
-    };
 
-    const handleInput = () => {
+        // Restore cursor position
+        if (cursorPosition !== null) {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            let currentNode = editorRef.current.firstChild;
+            let currentOffset = 0;
+
+            while (currentNode) {
+                if (currentNode.nodeType === Node.TEXT_NODE) {
+                    const nodeLength = currentNode.textContent?.length || 0;
+                    if (currentOffset + nodeLength >= cursorPosition) {
+                        range.setStart(currentNode, cursorPosition - currentOffset);
+                        range.collapse(true);
+                        selection?.removeAllRanges();
+                        selection?.addRange(range);
+                        break;
+                    }
+                    currentOffset += nodeLength;
+                } else if (currentNode.nodeName === 'BR') {
+                    currentOffset += 1; // Count line breaks as 1 character
+                    if (currentOffset === cursorPosition) {
+                        range.setStartAfter(currentNode);
+                        range.collapse(true);
+                        selection?.removeAllRanges();
+                        selection?.addRange(range);
+                        break;
+                    }
+                }
+                currentNode = currentNode.nextSibling;
+            }
+        }
+    }, [changes, text, cursorPosition]);
+
+    const handleInput = useCallback(() => {
         if (editorRef.current) {
             setText(editorRef.current.innerText);
             setChanges([]);
             setOptimizedText("");
             setIsOptimizationComplete(false);
+            
+            // Save cursor position
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                let currentNode = editorRef.current.firstChild;
+                let offset = 0;
+
+                while (currentNode) {
+                    if (currentNode === range.startContainer) {
+                        offset += range.startOffset;
+                        break;
+                    } else if (currentNode.nodeType === Node.TEXT_NODE) {
+                        offset += currentNode.textContent?.length || 0;
+                    } else if (currentNode.nodeName === 'BR') {
+                        offset += 1; // Count line breaks as 1 character
+                    }
+                    currentNode = currentNode.nextSibling;
+                }
+
+                setCursorPosition(offset);
+            }
         }
-    };
+    }, []);
 
     const handleApplyChanges = () => {
         if (editorRef.current && optimizedText) {
@@ -154,6 +209,23 @@ John Doe`);
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const br = document.createElement('br');
+                range.deleteContents();
+                range.insertNode(br);
+                range.setStartAfter(br);
+                range.setEndAfter(br);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        }
+    };
+
     return {
         isLoading,
         isOptimizationComplete,
@@ -161,6 +233,7 @@ John Doe`);
         handleOptimize,
         handleInput,
         handleApplyChanges,
-        handleRevertChanges
+        handleRevertChanges,
+        handleKeyDown
     };
 }
