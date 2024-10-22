@@ -4,7 +4,33 @@ html, body, #root {
 }
 
 del {
-  color: rgba(0, 0, 0, 0.433);
+  color: rgba(0, 0, 0, 0.6);
   text-decoration: line-through;
   text-decoration-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Light mode styles */
+.light .texteditor del {
+  text-decoration: line-through;
+  color: #ef4444; /* red-500 */
+  background-color: #fee2e2; /* red-100 */
+}
+
+.light .texteditor u {
+  text-decoration: none;
+  color: #22c55e; /* green-500 */
+  background-color: #dcfce7; /* green-100 */
+}
+
+/* Dark mode styles */
+.dark .texteditor del {
+  text-decoration: line-through;
+  color: #fca5a5; /* red-300 */
+  background-color: #7f1d1d; /* red-900 */
+}
+
+.dark .texteditor u {
+  text-decoration: none;
+  color: #4ade80; /* green-400 */
+  background-color: #14532d; /* green-900 */
 }

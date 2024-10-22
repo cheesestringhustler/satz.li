@@ -35,9 +35,7 @@ export async function optimizeText(text: string, language: string, customPrompt:
                 response.write(chunk);
             }
         }
-
-        console.log(await prompt.formatMessages({ text, language, customPrompt: new HumanMessage({ content: customPrompt }) }));
-
+        // console.log(await prompt.formatMessages({ text, language, customPrompt: new HumanMessage({ content: customPrompt }) }));
         response.send();
     } catch (error) {
         console.error('Error:', error);
