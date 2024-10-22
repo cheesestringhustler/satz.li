@@ -14,8 +14,7 @@ function App() {
           <Button>Login</Button>
         </div>
       </header>
-
-      <main className="container mx-auto px-4">
+      <main className="container mx-auto px-4 py-6">
         <TextOptimizer />
       </main>
     </ThemeProvider>

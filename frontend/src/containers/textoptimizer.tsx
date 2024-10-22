@@ -10,6 +10,7 @@ interface Change {
 }
 
 function TextOptimizer() {
+    const [originalText, setOriginalText] = useState("Er geht Sonntags nicht gerne einkaufen");
     const [text, setText] = useState("Er geht Sonntags nicht gerne einkaufen");
     const [isLoading, setIsLoading] = useState(false);
     const [changes, setChanges] = useState<Change[]>([]);
@@ -32,6 +33,7 @@ function TextOptimizer() {
         setIsLoading(true);
         setChanges([]);
         setIsOptimizationComplete(false);
+        setOriginalText(text);
         
         try {
             const reader = await optimizeText(text);
@@ -134,6 +136,16 @@ function TextOptimizer() {
         e.preventDefault();
     };
 
+    const handleRevertChanges = () => {
+        if (editorRef.current && originalText) {
+            editorRef.current.innerText = originalText;
+            setText(originalText);
+            setChanges([]);
+            setOptimizedText("");
+            setIsOptimizationComplete(false);
+        }
+    };
+
     return (
         <div className="flex flex-col gap-4">
             <div
@@ -150,6 +162,9 @@ function TextOptimizer() {
                 </Button>
                 <Button onClick={handleApplyChanges} disabled={!isOptimizationComplete}>
                     Apply Changes
+                </Button>
+                <Button onClick={handleRevertChanges} disabled={!isOptimizationComplete}>
+                    Revert Changes
                 </Button>
             </div>
         </div>
