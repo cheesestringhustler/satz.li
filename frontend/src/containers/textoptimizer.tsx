@@ -1,103 +1,156 @@
 import { useState, useRef, useEffect } from 'react';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { optimizeText } from '@/services/api';
+import { diff_match_patch } from 'diff-match-patch';
+
+interface Change {
+    start: number;
+    end: number;
+    text: string;
+}
 
 function TextOptimizer() {
     const [text, setText] = useState("Er geht Sonntags nicht gerne einkaufen");
-    const [optimizedText, setOptimizedText] = useState("Er geht sonntags nicht gerne einkaufen.");
     const [isLoading, setIsLoading] = useState(false);
-    const optimizedTextRef = useRef<HTMLTextAreaElement>(null);
-    const [textareaWidth, setTextareaWidth] = useState<number | undefined>(undefined);
-    const [textareaTop, setTextareaTop] = useState<number | undefined>(undefined);
-    const [textareaLeft, setTextareaLeft] = useState<number | undefined>(undefined);
-    const inputTextareaRef = useRef<HTMLTextAreaElement>(null);
+    const [changes, setChanges] = useState<Change[]>([]);
+    const [optimizedText, setOptimizedText] = useState("");
+    const [isOptimizationComplete, setIsOptimizationComplete] = useState(false);
+    const editorRef = useRef<HTMLDivElement>(null);
+    const dmp = new diff_match_patch();
 
     useEffect(() => {
-        if (optimizedTextRef.current) {
-            optimizedTextRef.current.scrollTop = optimizedTextRef.current.scrollHeight;
+        if (editorRef.current) {
+            editorRef.current.innerText = text;
         }
-    }, [optimizedText]);
+    }, []);
+
+    useEffect(() => {
+        applyChanges();
+    }, [changes]);
 
     const handleOptimize = async () => {
         setIsLoading(true);
-        setOptimizedText("");
+        setChanges([]);
+        setIsOptimizationComplete(false);
         
         try {
             const reader = await optimizeText(text);
+            let newOptimizedText = '';
 
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) break;
+                if (done) {
+                    setIsOptimizationComplete(true);
+                    break;
+                }
                 const chunk = new TextDecoder().decode(value);
-                setOptimizedText(prev => prev + chunk);
+                newOptimizedText += chunk;
+                updateTextWithChanges(text, newOptimizedText, false);
             }
+            updateTextWithChanges(text, newOptimizedText, true);
+            setOptimizedText(newOptimizedText);
         } catch (error) {
             console.error('Error:', error);
-            setOptimizedText("An error occurred while optimizing the text.");
+            setText("An error occurred while optimizing the text.");
         } finally {
             setIsLoading(false);
         }
     };
 
-    useEffect(() => {
-        const updateTextareaPosition = () => {
-            if (inputTextareaRef.current) {
-                const rect = inputTextareaRef.current.getBoundingClientRect();
-                setTextareaWidth(inputTextareaRef.current.offsetWidth);
-                setTextareaTop(rect.top);
-                setTextareaLeft(rect.left);
+    const updateTextWithChanges = (originalText: string, newOptimizedText: string, isComplete: boolean) => {
+        const comparisonLength = isComplete ? originalText.length : Math.min(originalText.length, newOptimizedText.length);
+        const diffs = dmp.diff_main(originalText.slice(0, comparisonLength), newOptimizedText.slice(0, comparisonLength));
+        dmp.diff_cleanupSemantic(diffs);
+
+        const newChanges: Change[] = [];
+        let position = 0;
+
+        diffs.forEach(([operation, text]) => {
+            if (operation === -1) {
+                // Deletion
+                newChanges.push({
+                    start: position,
+                    end: position + text.length,
+                    text: ''
+                });
+                position += text.length;
+            } else if (operation === 1) {
+                // Insertion
+                newChanges.push({
+                    start: position,
+                    end: position,
+                    text: text
+                });
+            } else {
+                // No change
+                position += text.length;
             }
-        };
+        });
 
-        updateTextareaPosition();
-        
-        window.addEventListener('resize', updateTextareaPosition);
-        return () => {
-            window.removeEventListener('resize', updateTextareaPosition);
-        };
-    }, []);
-    
+        setChanges(newChanges);
+    };
 
-    const applyAllChanges = () => {
-        setText(optimizedText);
+    const applyChanges = () => {
+        if (!editorRef.current) return;
+
+        let result = text;
+        let offset = 0;
+
+        changes.sort((a, b) => a.start - b.start).forEach(change => {
+            const beforeChange = result.slice(0, change.start + offset);
+            const afterChange = result.slice(change.end + offset);
+            if (change.text) {
+                result = beforeChange + `<u>${change.text}</u>` + afterChange;
+                offset += change.text.length - (change.end - change.start) + 7; // 7 for <u></u> tags
+            } else {
+                result = beforeChange + `<del>${result.slice(change.start + offset, change.end + offset)}</del>` + afterChange;
+                offset += 11; // 11 for <del></del> tags
+            }
+        });
+
+        editorRef.current.innerHTML = result;
+    };
+
+    const handleInput = () => {
+        if (editorRef.current) {
+            setText(editorRef.current.innerText);
+            setChanges([]);
+            setOptimizedText("");
+            setIsOptimizationComplete(false);
+        }
+    };
+
+    const handleApplyChanges = () => {
+        if (editorRef.current && optimizedText) {
+            editorRef.current.innerText = optimizedText;
+            setText(optimizedText);
+            setChanges([]);
+            setOptimizedText("");
+            setIsOptimizationComplete(false);
+        }
+    };
+
+    const handleContextMenu = (e: React.MouseEvent) => {
+        e.preventDefault();
     };
 
     return (
         <div className="flex flex-col gap-4">
-            <Textarea
-                ref={inputTextareaRef}
-                className="h-64 text-sm"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Enter your text here..."
+            <div
+                ref={editorRef}
+                className="h-64 p-2 text-sm border rounded-md overflow-auto"
+                contentEditable
+                onInput={handleInput}
+                onContextMenu={handleContextMenu}
+                style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
             />
-            {optimizedText && (
-                <Textarea
-                    className="optimizedTextarea pointer-events-none h-64 text-sm absolute bg-transparent z-10 opacity-50 blur-[4px] overflow-auto"
-                    style={{ 
-                        width: textareaWidth ? textareaWidth : 0, 
-                        top: textareaTop ? textareaTop : 0, 
-                        left: textareaLeft ? textareaLeft : 0, 
-                        // width: textareaWidth ? textareaWidth - 24 : 0, 
-                        // top: textareaTop ? textareaTop + 8 : 0, 
-                        // left: textareaLeft ? textareaLeft + 12 : 0, 
-                        whiteSpace: 'pre-wrap', 
-                        wordWrap: 'break-word' 
-                    }}
-                    value={optimizedText}
-                    readOnly
-                />
-            )}
             <div className="flex justify-start gap-2">
                 <Button onClick={handleOptimize} disabled={isLoading}>
                     {isLoading ? "Checking..." : "Check Text"}
                 </Button>
-                {optimizedText && (
-                    <Button onClick={applyAllChanges}>
-                        Apply all
-                    </Button>
-                )}
+                <Button onClick={handleApplyChanges} disabled={!isOptimizationComplete}>
+                    Apply Changes
+                </Button>
             </div>
         </div>
     )

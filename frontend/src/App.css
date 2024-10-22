@@ -2,3 +2,9 @@ html, body, #root {
   margin: 0;
   padding: 0;
 }
+
+del {
+  color: rgba(0, 0, 0, 0.433);
+  text-decoration: line-through;
+  text-decoration-color: rgba(0, 0, 0, 0.9);
+}
