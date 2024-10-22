@@ -8,7 +8,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <header className="w-full flex p-4 justify-between items-center">
-        <h1>txo</h1>
+        <h1>txt<b><i>o</i></b></h1>
         <div className="flex items-center gap-2">
           <ModeToggle />
           <Button>Login</Button>

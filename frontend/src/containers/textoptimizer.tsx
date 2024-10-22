@@ -60,9 +60,15 @@ function TextOptimizer() {
     };
 
     const updateTextWithChanges = (originalText: string, newOptimizedText: string, isComplete: boolean) => {
-        const comparisonLength = isComplete ? originalText.length : Math.min(originalText.length, newOptimizedText.length);
-        const diffs = dmp.diff_main(originalText.slice(0, comparisonLength), newOptimizedText.slice(0, comparisonLength));
-        dmp.diff_cleanupSemantic(diffs);
+        let diffs: [number, string][];
+        if (isComplete) {
+            diffs = dmp.diff_main(originalText, newOptimizedText);
+            dmp.diff_cleanupSemantic(diffs);
+        } else {
+            const comparisonLength = Math.min(originalText.length, newOptimizedText.length);
+            diffs = dmp.diff_main(originalText.slice(0, comparisonLength), newOptimizedText);
+            dmp.diff_cleanupSemantic(diffs);
+        }
 
         const newChanges: Change[] = [];
         let position = 0;
@@ -122,6 +128,10 @@ function TextOptimizer() {
         }
     };
 
+    const handleContextMenu = (e: React.MouseEvent) => {
+        e.preventDefault();
+    };
+    
     const handleApplyChanges = () => {
         if (editorRef.current && optimizedText) {
             editorRef.current.innerText = optimizedText;
@@ -130,10 +140,6 @@ function TextOptimizer() {
             setOptimizedText("");
             setIsOptimizationComplete(false);
         }
-    };
-
-    const handleContextMenu = (e: React.MouseEvent) => {
-        e.preventDefault();
     };
 
     const handleRevertChanges = () => {
