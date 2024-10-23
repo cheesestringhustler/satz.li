@@ -1,11 +1,10 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTextOptimizer } from '@/hooks/useTextOptimizer';
 import LanguageDropdown from './languageDropdown';
 import languages from '@/assets/languages.json';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 function TextOptimizer() {
     const {
@@ -20,6 +19,26 @@ function TextOptimizer() {
     } = useTextOptimizer();
     const [language, setLanguage] = useState('en');
     const [customPrompt, setCustomPrompt] = useState('');
+    const [editorHeight, setEditorHeight] = useState(256); // Default height of 64 * 4 = 256px
+    const resizeRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                if (entry.target === resizeRef.current) {
+                    setEditorHeight(entry.contentRect.height);
+                }
+            }
+        });
+
+        if (resizeRef.current) {
+            resizeObserver.observe(resizeRef.current);
+        }
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, []);
 
     return (
         <div className="flex flex-col gap-4">
@@ -41,25 +60,31 @@ function TextOptimizer() {
             </div>
 
             <div className='flex flex-col gap-2 mt-2'>
-                {/* <Label htmlFor="text">Text</Label> */}
                 <div
-                ref={editorRef}
-                className="texteditor h-64 p-2 text-sm border rounded-md overflow-auto focus:border-gray-800 focus:dark:border-gray-200"
-                contentEditable
-                onInput={handleInput}
-                onKeyDown={handleKeyDown}
-                onPaste={(e) => {
-                    e.preventDefault();
-                    const text = e.clipboardData.getData('text/plain');
-                    document.getSelection()?.getRangeAt(0).insertNode(document.createTextNode(text));
-                }}
-                onContextMenu={(e) => e.preventDefault()}
-                style={{ 
-                    whiteSpace: 'pre-wrap', 
-                    wordWrap: 'break-word',
-                    outline: 'none',
-                    }}
-                />
+                    ref={resizeRef}
+                    className="resize-y overflow-auto"
+                    style={{ minHeight: '64px', maxHeight: '80vh' }}
+                >
+                    <div
+                        ref={editorRef}
+                        className="texteditor p-2 text-sm border rounded-md overflow-auto focus:border-gray-800 focus:dark:border-gray-200"
+                        contentEditable
+                        onInput={handleInput}
+                        onKeyDown={handleKeyDown}
+                        onPaste={(e) => {
+                            e.preventDefault();
+                            const text = e.clipboardData.getData('text/plain');
+                            document.getSelection()?.getRangeAt(0).insertNode(document.createTextNode(text));
+                        }}
+                        onContextMenu={(e) => e.preventDefault()}
+                        style={{ 
+                            whiteSpace: 'pre-wrap', 
+                            wordWrap: 'break-word',
+                            outline: 'none',
+                            height: `${editorHeight}px`,
+                        }}
+                    />
+                </div>
             </div>
             
             <div className="flex justify-start gap-2">

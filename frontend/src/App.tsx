@@ -21,7 +21,7 @@ function App() {
         <main className="container mx-auto px-4 py-6 max-w-[1000px]">
           <TextOptimizer />
         </main>
-        <footer className="container mx-auto px-4 py-6 text-center text-xs fixed bottom-0 w-full text-gray-500">
+        <footer className="container w-full mx-auto px-4 py-12 text-center text-xs text-gray-500">
           <p className="mb-2">This tool will help you optimize your text for better readability. It checks for spelling, grammar, and punctuation errors and suggests fixes.</p>
           <p className="mb-4">This site stores <a href="#" target="_blank" rel="noreferrer" className="underline">necessary data</a> for user management and analytics; text is sent to the OpenAI API, adhering to its <a href="https://openai.com/policies" target="_blank" rel="noopener noreferrer" className="underline">policies</a>.</p>
         </footer>

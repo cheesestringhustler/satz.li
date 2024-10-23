@@ -14,8 +14,8 @@ const userPrompt = `${basePrompt}. Return only the corrected text. Text to corre
 
 const prompt = ChatPromptTemplate.fromMessages([
     SystemMessagePromptTemplate.fromTemplate(systemPrompt),
-    new MessagesPlaceholder("customPrompt"),
     HumanMessagePromptTemplate.fromTemplate(userPrompt),
+    new MessagesPlaceholder("customPrompt"),
 ]);
 const parser = new StringOutputParser();
 // @ts-ignore ChatOpenAI type
@@ -23,7 +23,7 @@ const chain = prompt.pipe(model).pipe(parser);
 
 export async function optimizeText(text: string, language: string, customPrompt: string, res: Response) {
     try {
-        const stream = await chain.stream({ text, language, customPrompt: new HumanMessage({ content: "Custom instructions: "+customPrompt }) });
+        const stream = await chain.stream({ text, language, customPrompt: new HumanMessage({ content: "Follow these instructions in addition to the instructions above: "+customPrompt }) });
 
         res.header('Content-Type', 'text/plain');
         res.header('Transfer-Encoding', 'chunked');
