@@ -58,6 +58,22 @@ function TextOptimizer() {
         };
     }, []);
 
+    const handlePromptKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleOptimize(languages.find(lang => lang.code === language)?.name || '', customPrompt);
+        }
+    };
+
+    const handleEditorKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            handleOptimize(languages.find(lang => lang.code === language)?.name || '', customPrompt);
+        } else {
+            handleKeyDown(e);
+        }
+    };
+
     return (
         <div className="flex flex-col gap-4">
             <div className='flex flex-row gap-2'>
@@ -72,7 +88,8 @@ function TextOptimizer() {
                     type="text" 
                     placeholder="Provide instructions such as 'use passive voice' or 'make it shorter'" 
                     value={customPrompt} 
-                    onChange={(e) => setCustomPrompt(e.target.value)} 
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    onKeyDown={handlePromptKeyDown}
                 />
                 </div>
             </div>
@@ -89,7 +106,7 @@ function TextOptimizer() {
                         className="texteditor p-2 text-sm border rounded-md overflow-auto focus:border-gray-800 focus:dark:border-gray-200"
                         contentEditable
                         onInput={handleInput}
-                        onKeyDown={handleKeyDown}
+                        onKeyDown={handleEditorKeyDown}
                         onPaste={(e) => {
                             e.preventDefault();
                             const text = e.clipboardData.getData('text/plain');
