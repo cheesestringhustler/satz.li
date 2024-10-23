@@ -1,12 +1,27 @@
 import { ChatOpenAI } from "npm:@langchain/openai";
+import { ChatAnthropic } from "npm:@langchain/anthropic";
 import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from "npm:@langchain/core/prompts";
 import { StringOutputParser } from "npm:@langchain/core/output_parsers";
 import { HumanMessage } from "npm:@langchain/core/messages";
 import { Response } from "npm:express@4";
+import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
 
-const model = new ChatOpenAI({ 
-  modelName: "gpt-4o-mini"
-});
+const env = await load();
+
+const modelType: string = 'openai'; // Variable to decide between Anthropic and OpenAI
+
+let model;
+if (modelType === 'anthropic') {
+    model = new ChatAnthropic({
+        modelName: "claude-3-haiku-20240307",
+        anthropicApiKey: env.ANTHROPIC_API_KEY,
+    });
+} else {
+    model = new ChatOpenAI({
+        modelName: "gpt-4o-mini",
+        apiKey: env.OPENAI_API_KEY,
+    });
+}
 
 const basePrompt = `Correct the text to have proper spelling, grammar, and punctuation`; 
 const systemPrompt = `${basePrompt}. The language of the text is {language}.` 
@@ -42,4 +57,3 @@ export async function optimizeText(text: string, language: string, customPrompt:
         res.status(500).json({ error: 'An error occurred while processing your request.' });
     }
 }
-

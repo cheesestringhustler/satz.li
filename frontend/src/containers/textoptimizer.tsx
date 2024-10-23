@@ -16,7 +16,6 @@ function TextOptimizer() {
         handleApplyChanges,
         handleRevertChanges,
         handleKeyDown,
-        hoveredChangeIndex,
         setHoveredChangeIndex
     } = useTextOptimizer();
     const [language, setLanguage] = useState('en');
