@@ -25,6 +25,7 @@ John Doe`);
     const [cursorPosition, setCursorPosition] = useState<number | null>(null);
     const editorRef = useRef<HTMLDivElement>(null);
     const dmp = new diff_match_patch();
+    const [hoveredChangeIndex, setHoveredChangeIndex] = useState<number | null>(null);
 
     useEffect(() => {
         if (editorRef.current) {
@@ -111,15 +112,15 @@ John Doe`);
         let result = text;
         let offset = 0;
 
-        changes.sort((a, b) => a.start - b.start).forEach(change => {
+        changes.sort((a, b) => a.start - b.start).forEach((change, index) => {
             const beforeChange = result.slice(0, change.start + offset);
             const afterChange = result.slice(change.end + offset);
             if (change.text) {
-                result = beforeChange + `<u>${change.text}</u>` + afterChange;
-                offset += change.text.length - (change.end - change.start) + 7; // 7 for <u></u> tags
+                result = beforeChange + `<span class="change insertion" data-index="${index}">${change.text}</span>` + afterChange;
+                offset += change.text.length - (change.end - change.start) + `<span class="change insertion" data-index="${index}"></span>`.length;
             } else {
-                result = beforeChange + `<del>${result.slice(change.start + offset, change.end + offset)}</del>` + afterChange;
-                offset += 11; // 11 for <del></del> tags
+                result = beforeChange + `<span class="change deletion" data-index="${index}">${result.slice(change.start + offset, change.end + offset)}</span>` + afterChange;
+                offset += `<span class="change deletion" data-index="${index}"></span>`.length;
             }
         });
 
@@ -157,6 +158,61 @@ John Doe`);
             }
         }
     }, [changes, text, cursorPosition]);
+
+    const handleChangeClick = useCallback((e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        if (target.classList.contains('change')) {
+            e.preventDefault();
+            const index = parseInt(target.getAttribute('data-index') || '');
+            if (!isNaN(index)) {
+                if (e.button === 0) { // Left click
+                    applyChange(index);
+                } else if (e.button === 2) { // Right click
+                    rejectChange(index);
+                }
+            }
+        }
+    }, [changes]);
+
+    const applyChange = (index: number) => {
+        const change = changes[index];
+        if (change) {
+            let newText = text.slice(0, change.start) + change.text + text.slice(change.end);
+            setText(newText);
+            
+            // Update positions of remaining changes
+            const updatedChanges = changes.filter((_, i) => i !== index).map(c => {
+                if (c.start > change.start) {
+                    return {
+                        ...c,
+                        start: c.start - (change.end - change.start) + change.text.length,
+                        end: c.end - (change.end - change.start) + change.text.length
+                    };
+                }
+                return c;
+            });
+            
+            setChanges(updatedChanges);
+        }
+    };
+
+    const rejectChange = (index: number) => {
+        // Simply remove the rejected change from the changes array
+        setChanges(changes.filter((_, i) => i !== index));
+    };
+
+    useEffect(() => {
+        if (editorRef.current) {
+            editorRef.current.addEventListener('mousedown', handleChangeClick);
+            editorRef.current.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+        return () => {
+            if (editorRef.current) {
+                editorRef.current.removeEventListener('mousedown', handleChangeClick);
+                editorRef.current.removeEventListener('contextmenu', (e) => e.preventDefault());
+            }
+        };
+    }, [handleChangeClick]);
 
     const handleInput = useCallback(() => {
         if (editorRef.current) {
@@ -234,6 +290,8 @@ John Doe`);
         handleInput,
         handleApplyChanges,
         handleRevertChanges,
-        handleKeyDown
+        handleKeyDown,
+        hoveredChangeIndex,
+        setHoveredChangeIndex,
     };
 }

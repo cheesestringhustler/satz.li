@@ -15,12 +15,31 @@ function TextOptimizer() {
         handleInput,
         handleApplyChanges,
         handleRevertChanges,
-        handleKeyDown
+        handleKeyDown,
+        hoveredChangeIndex,
+        setHoveredChangeIndex
     } = useTextOptimizer();
     const [language, setLanguage] = useState('en');
     const [customPrompt, setCustomPrompt] = useState('');
     const [editorHeight, setEditorHeight] = useState(256); // Default height of 64 * 4 = 256px
     const resizeRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.textContent = `
+            .change { cursor: pointer; }
+            .light .texteditor .change.insertion { text-decoration: none; color: #22c55e; background-color: #dcfce7; }
+            .light .texteditor .change.deletion { text-decoration: line-through; color: #ef4444; background-color: #fee2e2; }
+            .dark .texteditor .change.insertion { text-decoration: none; color: #4ade80; background-color: #14532d; }
+            .dark .texteditor .change.deletion { text-decoration: line-through; color: #fca5a5; background-color: #7f1d1d; }
+            .light .texteditor .change:hover { background-color: rgba(0, 0, 0, 0.1); }
+            .dark .texteditor .change:hover { background-color: rgba(255, 255, 255, 0.1); }
+        `;
+        document.head.appendChild(style);
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, []);
 
     useEffect(() => {
         const resizeObserver = new ResizeObserver((entries) => {
@@ -60,6 +79,7 @@ function TextOptimizer() {
             </div>
 
             <div className='flex flex-col gap-2 mt-2'>
+                <span className='text-xs text-gray-500 text-end'>left click to apply, right click to reject changes</span>
                 <div
                     ref={resizeRef}
                     className="resize-y overflow-auto"
@@ -77,6 +97,13 @@ function TextOptimizer() {
                             document.getSelection()?.getRangeAt(0).insertNode(document.createTextNode(text));
                         }}
                         onContextMenu={(e) => e.preventDefault()}
+                        onMouseOver={(e) => {
+                            const target = e.target as HTMLElement;
+                            if (target.classList.contains('change')) {
+                                setHoveredChangeIndex(parseInt(target.getAttribute('data-index') || ''));
+                            }
+                        }}
+                        onMouseOut={() => setHoveredChangeIndex(null)}
                         style={{ 
                             whiteSpace: 'pre-wrap', 
                             wordWrap: 'break-word',
@@ -93,10 +120,10 @@ function TextOptimizer() {
                 </Button>
                 <div className='flex-1'></div>
                 <Button onClick={handleApplyChanges} disabled={!isOptimizationComplete}>
-                    Apply Changes
+                    Apply All
                 </Button>
                 <Button onClick={handleRevertChanges} disabled={!isOptimizationComplete}>
-                    Revert Changes
+                    Revert
                 </Button>
             </div>
 
