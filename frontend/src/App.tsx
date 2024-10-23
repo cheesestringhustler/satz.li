@@ -12,13 +12,16 @@ function App() {
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <div className={theme}>
         <header className="w-full flex p-4 justify-between items-center">
-          <h1>txt<b><i>o</i></b></h1>
+          {/* <h1>txt<b><i>o</i></b></h1> */}
+          <div className="flex flex-row items-center">
+            <h1>txt</h1><span className="text-sm text-gray-500">&nbsp; - AI-Powered Text Assistance</span>
+          </div>
           <div className="flex items-center gap-2">
             <ModeToggle />
             <Button>Login</Button>
           </div>
         </header>
-        <main className="container mx-auto px-4 py-6 max-w-[1000px]">
+        <main className="container mx-auto px-4 py-6 w-full max-w-screen-lg">
           <TextOptimizer />
         </main>
         <footer className="container w-full mx-auto px-4 py-12 text-center text-xs text-gray-500">
