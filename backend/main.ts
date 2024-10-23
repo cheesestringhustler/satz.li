@@ -7,6 +7,9 @@ const port = 3000;
 
 app.use(express.json());
 
+// Serve static files from the 'dist' directory, used for production
+app.use(express.static("dist"));
+
 app.post('/api/optimize', async (req, res) => {
     const { text, language, customPrompt } = req.body;
     await optimizeText(text, language, customPrompt, res);

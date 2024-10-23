@@ -65,3 +65,7 @@ Thumbs.db
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Vite build info
+.vite/tsbuildinfo*
+tsconfig.*.tsbuildinfo
