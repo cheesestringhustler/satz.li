@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@/components/theme-provider"
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/mode-toggle';
-import TextOptimizer from '@/containers/textoptimizer';
+import TextOptimizer from '@/containers/TextOptimizer';
 import './App.css';
 import { useTheme } from "@/components/theme-provider"
 

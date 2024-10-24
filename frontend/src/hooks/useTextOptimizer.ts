@@ -1,12 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { optimizeText } from '@/services/api';
 import { diff_match_patch } from 'diff-match-patch';
-
-interface Change {
-    start: number;
-    end: number;
-    text: string;
-}
+import { Change } from '@/types/Change';
 
 export function useTextOptimizer() {
     const [originalText, setOriginalText] = useState("");
