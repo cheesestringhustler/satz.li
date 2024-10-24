@@ -1,0 +1,10 @@
+name: satz.li-composition
+
+services:
+  satz.li:
+    image: satz.li:latest
+    container_name: satz.li
+    ports:
+      - "80:3000"
+    restart: unless-stopped
+
