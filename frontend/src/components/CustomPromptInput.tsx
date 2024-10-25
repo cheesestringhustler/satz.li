@@ -10,11 +10,11 @@ interface CustomPromptInputProps {
 export function CustomPromptInput({ customPrompt, setCustomPrompt, onKeyDown }: CustomPromptInputProps) {
     return (
         <div className='flex flex-col gap-2 flex-1'>
-            <Label htmlFor="customPrompt">Custom Prompt</Label>
+            {/* <Label htmlFor="customPrompt">Custom Prompt</Label> */}
             <Input
                 id="customPrompt"
                 type="text" 
-                placeholder="Provide instructions such as 'use passive voice' or 'make it shorter'" 
+                placeholder="Provide an optional prompt such as 'use passive voice' or 'make it shorter'" 
                 value={customPrompt} 
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 onKeyDown={onKeyDown}
