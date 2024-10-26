@@ -8,23 +8,35 @@ import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
 
 const env = await load();
 
-const modelType: string = 'openai'; // Variable to decide between Anthropic and OpenAI
+    const modelType: string = 'claude-3-5-sonnet';
 
 let model;
-if (modelType === 'anthropic') {
+if (modelType === 'claude-3-haiku') {
     model = new ChatAnthropic({
         modelName: "claude-3-haiku-20240307",
         anthropicApiKey: env.ANTHROPIC_API_KEY,
     });
-} else {
+} else if (modelType === 'claude-3-5-sonnet') {
+    model = new ChatAnthropic({
+        modelName: "claude-3-5-sonnet-20241022",
+        anthropicApiKey: env.ANTHROPIC_API_KEY,
+    });
+} else if (modelType === 'gpt-4o-mini') {
     model = new ChatOpenAI({
         modelName: "gpt-4o-mini",
         apiKey: env.OPENAI_API_KEY,
     });
+} else if (modelType === 'gpt-4o') {
+    model = new ChatOpenAI({
+        modelName: "gpt-4o",
+        apiKey: env.OPENAI_API_KEY,
+    });
+} else {
+    throw new Error(`Unknown model type: ${modelType}`);
 }
 
 const basePrompt = `Correct the text to have proper spelling, grammar, and punctuation`; 
-const systemPrompt = `${basePrompt}. The language of the text is {language}.` 
+const systemPrompt = `${basePrompt}. The language of the text is {language}. Improve the text to be more concise and idiomatic.` 
 const userPrompt = `${basePrompt}. Return only the corrected text. Text to correct:\n{text}`;
 
 const prompt = ChatPromptTemplate.fromMessages([
