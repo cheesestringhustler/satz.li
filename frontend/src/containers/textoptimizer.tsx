@@ -1,8 +1,8 @@
-import { LanguageSelector } from '@/components/LanguageSelector';
-import { CustomPromptInput } from '@/components/CustomPromptInput';
+import { LanguageSelector } from '@/containers/LanguageSelector';
+import CustomPromptInput from '@/containers/CustomPromptInput';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import TextEditor from '@/components/TextEditor';
-import { EditorControls } from '@/components/EditorControls';
+import TextEditor from '@/containers/TextEditor';
+import EditorControls from '@/containers/EditorControls';
 import { optimizeText } from '@/services/api';
 import { useTextState } from '@/hooks/useTextState';
 import { useTextChanges } from '@/hooks/useTextChanges';
@@ -86,7 +86,7 @@ function TextOptimizer() {
         }
     }, []);
 
-    const handleApplyChanges = () => {
+    const handleApplyChanges = useCallback(() => {
         if (editorRef.current && textState.optimizedText) {
             editorRef.current.innerText = textState.optimizedText;
             textState.setText(textState.optimizedText);
@@ -94,9 +94,9 @@ function TextOptimizer() {
             textState.setOptimizedText("");
             textState.setIsOptimizationComplete(false);
         }
-    };
+    }, [textState, textChanges, editorRef]); // Added dependencies
 
-    const handleRevertChanges = () => {
+    const handleRevertChanges = useCallback(() => {
         if (editorRef.current && textState.originalText) {
             editorRef.current.innerText = textState.originalText;
             textState.setText(textState.originalText);
@@ -104,40 +104,7 @@ function TextOptimizer() {
             textState.setOptimizedText("");
             textState.setIsOptimizationComplete(false);
         }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const selection = window.getSelection();
-            if (selection && selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                const br = document.createElement('br');
-                range.deleteContents();
-                range.insertNode(br);
-                range.setStartAfter(br);
-                range.setEndAfter(br);
-                selection.removeAllRanges();
-                selection.addRange(range);
-            }
-        }
-    };
-
-    const handlePromptKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleOptimize(language, customPrompt);
-        }
-    };
-
-    const handleEditorKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            handleOptimize(language, customPrompt);
-        } else {
-            handleKeyDown(e);
-        }
-    };
+    }, [textState, textChanges, editorRef]); // Added dependencies
 
     return (
         <div className='flex flex-col gap-4'>
@@ -150,12 +117,12 @@ function TextOptimizer() {
                     <CustomPromptInput
                         customPrompt={customPrompt}
                         setCustomPrompt={setCustomPrompt}
-                        onKeyDown={handlePromptKeyDown}
+                        onOptimize={() => handleOptimize(language, customPrompt)}
                     />
                     <TextEditor
                         editorRef={editorRef}
-                        handleInput={handleInput}
-                        handleEditorKeyDown={handleEditorKeyDown}
+                        onInput={handleInput}
+                        onOptimize={() => handleOptimize(language, customPrompt)}
                         setHoveredChangeIndex={setHoveredChangeIndex}
                     />
                 </div>

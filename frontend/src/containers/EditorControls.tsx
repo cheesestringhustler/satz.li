@@ -8,13 +8,13 @@ interface EditorControlsProps {
     onRevertChanges: () => void;
 }
 
-export function EditorControls({
+const EditorControls = ({
     isLoading,
     isOptimizationComplete,
     onOptimize,
     onApplyChanges,
-    onRevertChanges,
-}: EditorControlsProps) {
+    onRevertChanges
+}: EditorControlsProps) => {
     return (
         <div className="flex flex-col justify-between gap-2">
             <Button onClick={onOptimize} disabled={isLoading}>
@@ -31,4 +31,6 @@ export function EditorControls({
             </div>
         </div>
     );
-}
+};
+
+export default EditorControls;

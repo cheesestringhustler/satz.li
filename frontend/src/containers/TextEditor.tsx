@@ -2,12 +2,12 @@ import React, { useRef, useEffect, useState } from 'react';
 
 interface TextEditorProps {
     editorRef: React.RefObject<HTMLDivElement>;
-    handleInput: () => void;
-    handleEditorKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void;
+    onInput: () => void;
+    onOptimize: () => void;
     setHoveredChangeIndex: (index: number | null) => void;
 }
 
-function TextEditor({ editorRef, handleInput, handleEditorKeyDown, setHoveredChangeIndex }: TextEditorProps) {
+function TextEditor({ editorRef, onInput, onOptimize, setHoveredChangeIndex }: TextEditorProps) {
     const [editorHeight, setEditorHeight] = useState(0);
     const resizeRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +52,26 @@ function TextEditor({ editorRef, handleInput, handleEditorKeyDown, setHoveredCha
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            onOptimize();
+        } else if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const br = document.createElement('br');
+                range.deleteContents();
+                range.insertNode(br);
+                range.setStartAfter(br);
+                range.setEndAfter(br);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        }
+    };
+
     return (
         <div className='flex flex-col gap-2 mt-2 flex-1'>
             <span className='text-xs text-gray-500 text-end'>left click to apply, right click to reject changes</span>
@@ -64,8 +84,8 @@ function TextEditor({ editorRef, handleInput, handleEditorKeyDown, setHoveredCha
                     ref={editorRef}
                     className="texteditor p-2 text-sm border rounded-md overflow-auto focus:border-gray-800 focus:dark:border-gray-200 whitespace-pre-wrap break-words outline-none"
                     contentEditable
-                    onInput={handleInput}
-                    onKeyDown={handleEditorKeyDown}
+                    onInput={onInput}
+                    onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
                     onContextMenu={(e) => e.preventDefault()}
                     onMouseOver={handleMouseOver}
