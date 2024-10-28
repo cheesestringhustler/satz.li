@@ -4,10 +4,9 @@ interface TextEditorProps {
     editorRef: React.RefObject<HTMLDivElement>;
     onInput: () => void;
     onOptimize: () => void;
-    setHoveredChangeIndex: (index: number | null) => void;
 }
 
-function TextEditor({ editorRef, onInput, onOptimize, setHoveredChangeIndex }: TextEditorProps) {
+function TextEditor({ editorRef, onInput, onOptimize }: TextEditorProps) {
     const [editorHeight, setEditorHeight] = useState(0);
     const resizeRef = useRef<HTMLDivElement>(null);
 
@@ -42,13 +41,6 @@ function TextEditor({ editorRef, onInput, onOptimize, setHoveredChangeIndex }: T
             range.collapse(true);
             selection.removeAllRanges();
             selection.addRange(range);
-        }
-    };
-
-    const handleMouseOver = (e: React.MouseEvent) => {
-        const target = e.target as HTMLElement;
-        if (target.classList.contains('change')) {
-            setHoveredChangeIndex(parseInt(target.getAttribute('data-index') || ''));
         }
     };
 
@@ -88,8 +80,6 @@ function TextEditor({ editorRef, onInput, onOptimize, setHoveredChangeIndex }: T
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
                     onContextMenu={(e) => e.preventDefault()}
-                    onMouseOver={handleMouseOver}
-                    onMouseOut={() => setHoveredChangeIndex(null)}
                     style={{ height: `${editorHeight}px` }}
                 />
             </div>

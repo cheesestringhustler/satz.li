@@ -1,5 +1,4 @@
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 interface CustomPromptInputProps {
     customPrompt: string;
@@ -17,7 +16,6 @@ const CustomPromptInput = ({ customPrompt, setCustomPrompt, onOptimize }: Custom
 
     return (
         <div className='flex flex-col gap-2 flex-1'>
-            {/* <Label htmlFor="customPrompt">Custom Prompt</Label> */}
             <Input
                 id="customPrompt"
                 type="text" 

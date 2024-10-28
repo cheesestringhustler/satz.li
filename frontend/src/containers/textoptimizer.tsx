@@ -14,7 +14,6 @@ function TextOptimizer() {
     const textChanges = useTextChanges(editorRef, textState.text, textState.cursorPosition);
     
     const [isLoading, setIsLoading] = useState(false);
-    const [hoveredChangeIndex, setHoveredChangeIndex] = useState<number | null>(null);
     const [language, setLanguage] = useState('en');
     const [customPrompt, setCustomPrompt] = useState('');
 
@@ -113,7 +112,7 @@ function TextOptimizer() {
                 setLanguage={setLanguage}
             />
             <div className='flex flex-row gap-4'>
-                <div className='flex flex-col gap-4'>
+                <div className='flex flex-col gap-4 flex-1'>
                     <CustomPromptInput
                         customPrompt={customPrompt}
                         setCustomPrompt={setCustomPrompt}
@@ -123,19 +122,16 @@ function TextOptimizer() {
                         editorRef={editorRef}
                         onInput={handleInput}
                         onOptimize={() => handleOptimize(language, customPrompt)}
-                        setHoveredChangeIndex={setHoveredChangeIndex}
                     />
                 </div>
 
-                <div className='flex flex-col gap-4'>
-                    <EditorControls
-                        isLoading={isLoading}
-                        isOptimizationComplete={textState.isOptimizationComplete}
-                        onOptimize={() => handleOptimize(language, customPrompt)}
-                        onApplyChanges={handleApplyChanges}
-                        onRevertChanges={handleRevertChanges}
-                    />
-                </div>
+                <EditorControls
+                    isLoading={isLoading}
+                    isOptimizationComplete={textState.isOptimizationComplete}
+                    onOptimize={() => handleOptimize(language, customPrompt)}
+                    onApplyChanges={handleApplyChanges}
+                    onRevertChanges={handleRevertChanges}
+                />
             </div>
         </div>
     );
