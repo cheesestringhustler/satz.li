@@ -12,8 +12,8 @@ app.use(express.json());
 app.use(express.static("dist"));
 
 app.post('/api/optimize', async (req, res) => {
-    const { text, language, customPrompt } = req.body;
-    await optimizeText(text, language, customPrompt, res);
+    const { text, language, customPrompt, modelType } = req.body;
+    await optimizeText(text, language, customPrompt, modelType, res);
 });
 
 app.post('/api/detect-language', async (req, res) => {

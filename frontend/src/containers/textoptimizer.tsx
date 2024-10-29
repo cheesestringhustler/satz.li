@@ -65,7 +65,12 @@ function TextOptimizer() {
         textState.setOriginalText(textState.text);
 
         try {
-            const reader = await optimizeText(textState.text, language, customPrompt);
+            const reader = await optimizeText(
+                textState.text, 
+                language, 
+                customPrompt, 
+                modelType.toString()
+            );
             let newOptimizedText = '';
 
             while (true) {

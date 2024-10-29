@@ -1,6 +1,6 @@
 import languages from '@/assets/languages.json';
 
-export async function optimizeText(text: string, languageCode: string, customPrompt: string): Promise<ReadableStreamDefaultReader<Uint8Array>> {
+export async function optimizeText(text: string, languageCode: string, customPrompt: string, modelType: string): Promise<ReadableStreamDefaultReader<Uint8Array>> {
     const language = languages.find(lang => lang.code === languageCode)?.name || languageCode;
 
     const response = await fetch('/api/optimize', {
@@ -8,7 +8,7 @@ export async function optimizeText(text: string, languageCode: string, customPro
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text, language, customPrompt }),
+        body: JSON.stringify({ text, language, customPrompt, modelType }),
     });
 
     if (!response.ok) {
