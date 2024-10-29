@@ -10,18 +10,25 @@ import { useTextState } from '@/hooks/useTextState';
 import { useTextChanges } from '@/hooks/useTextChanges';
 import { saveCursorPosition } from '@/utils/cursorUtils';
 import { debounce } from 'lodash';
+import { useLanguageDetection } from '@/hooks/useLanguageDetection';
 
 function TextOptimizer() {
     const editorRef = useRef<HTMLDivElement>(null);
     const textState = useTextState();
     const textChanges = useTextChanges(editorRef, textState.text, textState.cursorPosition);
-    
     const [isLoading, setIsLoading] = useState(false);
-    const [language, setLanguage] = useState('de-ch');
-    const [autoDetectLanguage, setAutoDetectLanguage] = useState(false);
-    const [isLoadingLanguageDetection, setIsLoadingLanguageDetection] = useState(false);
-    const [lastDetectedSample, setLastDetectedSample] = useState('');
+
     const [customPrompt, setCustomPrompt] = useState('');
+
+    const {
+        language,
+        setLanguage,
+        isLoading: isLoadingLanguageDetection,
+        autoDetectEnabled,
+        setAutoDetectEnabled,
+        detectLanguageCore,
+        detectLanguageDebounced
+    } = useLanguageDetection();
 
     // Initialize editor content
     useEffect(() => {
@@ -79,43 +86,6 @@ function TextOptimizer() {
         }
     };
 
-    // Core language detection logic
-    const detectLanguageCore = async (text: string) => {
-        setIsLoadingLanguageDetection(true);
-        const currentSample = text.slice(0, 40);
-        if (currentSample === lastDetectedSample) {
-            setIsLoadingLanguageDetection(false);
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/detect-language', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: currentSample })
-            });
-            const { detectedLanguage } = await response.json();
-            if (detectedLanguage !== 'none') {
-                setLanguage(detectedLanguage);
-                setLastDetectedSample(currentSample);
-            }
-        } catch (error) {
-            console.error('Error detecting language:', error);
-        } finally {
-            setIsLoadingLanguageDetection(false);
-        }
-    };
-
-    // Debounced version for text changes
-    const detectLanguage = useCallback(
-        debounce(async (text: string) => {
-            if (text.length >= 10 && autoDetectLanguage) {
-                await detectLanguageCore(text);
-            }
-        }, 2000),
-        [autoDetectLanguage, lastDetectedSample]
-    );
-
     const handleInput = useCallback(() => {
         if (editorRef.current) {
             const newText = editorRef.current.innerText;
@@ -127,9 +97,9 @@ function TextOptimizer() {
             const newCursorPosition = saveCursorPosition(editorRef);
             textState.setCursorPosition(newCursorPosition);
 
-            detectLanguage(newText);
+            detectLanguageDebounced(newText);
         }
-    }, [detectLanguage]);
+    }, [detectLanguageDebounced]);
 
     const handleApplyChanges = useCallback(() => {
         if (editorRef.current && textState.optimizedText) {
@@ -139,7 +109,7 @@ function TextOptimizer() {
             textState.setOptimizedText("");
             textState.setIsOptimizationComplete(false);
         }
-    }, [textState, textChanges, editorRef]); // Added dependencies
+    }, [textState, textChanges, editorRef]);
 
     const handleRevertChanges = useCallback(() => {
         if (editorRef.current && textState.originalText) {
@@ -149,7 +119,14 @@ function TextOptimizer() {
             textState.setOptimizedText("");
             textState.setIsOptimizationComplete(false);
         }
-    }, [textState, textChanges, editorRef]); // Added dependencies
+    }, [textState, textChanges, editorRef]);
+
+    const handleAutoDetectChange = (checked: boolean) => {
+        setAutoDetectEnabled(checked);
+        if (checked) {
+            detectLanguageCore(editorRef.current?.innerText || '');
+        }
+    };
 
     return (
         <div className='flex flex-col gap-4'>
@@ -161,18 +138,17 @@ function TextOptimizer() {
                 <div className="flex items-center gap-2">
                     <Switch
                         id="autoDetect"
-                        checked={autoDetectLanguage}
-                        onCheckedChange={(checked) => {
-                            setAutoDetectLanguage(checked);
-                            if (checked && editorRef.current?.innerText) {
-                                detectLanguageCore(editorRef.current.innerText);
-                            }
-                        }}
+                        checked={autoDetectEnabled}
+                        onCheckedChange={handleAutoDetectChange}
                     />
                     {isLoadingLanguageDetection ? (
-                        <Label htmlFor="autoDetect" className='text-xs text-gray-500 animate-pulse'>Auto-detecting language...</Label>
+                        <Label htmlFor="autoDetect" className='text-xs text-gray-500 animate-pulse'>
+                            Auto-detecting language...
+                        </Label>
                     ) : (
-                        <Label htmlFor="autoDetect" className='text-xs text-gray-500 '>Auto-detect language</Label>
+                        <Label htmlFor="autoDetect" className='text-xs text-gray-500'>
+                            Auto-detect language
+                        </Label>
                     )}
                 </div>
             </div>
