@@ -1,6 +1,7 @@
 // @deno-types="npm:@types/express@4"
 import express from "npm:express@4";
 import { optimizeText } from "./optimize.ts";
+import { detectLanguage } from "./detectLanguage.ts";
 
 const app = express();
 const port = 3000;
@@ -13,6 +14,11 @@ app.use(express.static("dist"));
 app.post('/api/optimize', async (req, res) => {
     const { text, language, customPrompt } = req.body;
     await optimizeText(text, language, customPrompt, res);
+});
+
+app.post('/api/detect-language', async (req, res) => {
+    const { text } = req.body;
+    await detectLanguage(text, res);
 });
 
 app.listen(port, () => {

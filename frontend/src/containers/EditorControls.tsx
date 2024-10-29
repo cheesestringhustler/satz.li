@@ -18,7 +18,7 @@ const EditorControls = ({
     return (
         <div className="flex flex-col items-start gap-2 self-start">
             <Button onClick={onOptimize} disabled={isLoading}>
-                {isLoading ? "Checking..." : "Check Text"}
+                {isLoading ? "Optimizing..." : "Optimize"}
             </Button>
             <div className='flex-1'></div>
             <div className='flex flex-nowrap gap-2'>

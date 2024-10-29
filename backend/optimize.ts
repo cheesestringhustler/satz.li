@@ -8,7 +8,7 @@ import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
 
 const env = await load();
 
-    const modelType: string = 'claude-3-5-sonnet';
+const modelType: string = 'claude-3-5-sonnet';
 
 let model;
 if (modelType === 'claude-3-haiku') {
