@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { diff_match_patch } from 'diff-match-patch';
-import { Change } from '@/types/Change';
+import { change } from '@/types/Change';
 import { restoreCursorPosition } from '@/utils/cursorUtils';
 
 export function useTextChanges(editorRef: React.RefObject<HTMLDivElement>, text: string, cursorPosition: number | null) {
-    const [changes, setChanges] = useState<Change[]>([]);
+    const [changes, setChanges] = useState<change[]>([]);
     const dmp = new diff_match_patch();
 
     const updateTextWithChanges = useCallback((originalText: string, newOptimizedText: string, isComplete: boolean) => {
@@ -18,7 +18,7 @@ export function useTextChanges(editorRef: React.RefObject<HTMLDivElement>, text:
             dmp.diff_cleanupSemantic(diffs);
         }
 
-        const newChanges: Change[] = [];
+        const newChanges: change[] = [];
         let position = 0;
 
         diffs.forEach(([operation, text]) => {

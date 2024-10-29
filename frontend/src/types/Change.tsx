@@ -1,7 +1,7 @@
-interface Change {
+interface change {
     start: number;
     end: number;
     text: string;
 }
 
-export type { Change };
+export type { change };

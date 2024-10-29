@@ -1,23 +1,25 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { Switch } from '@/components/ui/switch';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { Label } from '@/components/ui/label';
-import { optimizeText } from '@/services/api';
-import { LanguageSelector } from '@/containers/LanguageSelector';
+import { Switch } from '@/components/ui/switch';
+
 import CustomPromptInput from '@/containers/CustomPromptInput';
-import TextEditor from '@/containers/TextEditor';
 import EditorControls from '@/containers/EditorControls';
-import { useTextState } from '@/hooks/useTextState';
-import { useTextChanges } from '@/hooks/useTextChanges';
-import { saveCursorPosition } from '@/utils/cursorUtils';
-import { debounce } from 'lodash';
+import { LanguageSelector } from '@/containers/LanguageSelector';
+import ModelSelector from '@/containers/ModelSelector';
+import TextEditor from '@/containers/TextEditor';
 import { useLanguageDetection } from '@/hooks/useLanguageDetection';
+import { useTextChanges } from '@/hooks/useTextChanges';
+import { useTextState } from '@/hooks/useTextState';
+import { optimizeText } from '@/services/api';
+import { saveCursorPosition } from '@/utils/cursorUtils';
 
 function TextOptimizer() {
     const editorRef = useRef<HTMLDivElement>(null);
     const textState = useTextState();
     const textChanges = useTextChanges(editorRef, textState.text, textState.cursorPosition);
     const [isLoading, setIsLoading] = useState(false);
-
+    const [modelType, setModelType] = useState('gpt-4o-mini');
     const [customPrompt, setCustomPrompt] = useState('');
 
     const {
@@ -48,7 +50,7 @@ function TextOptimizer() {
             const handleClick = (e: MouseEvent) => textChanges.handleChangeClick(e, textState.setText);
             editorRef.current.addEventListener('mousedown', handleClick);
             editorRef.current.addEventListener('contextmenu', (e) => e.preventDefault());
-            
+
             return () => {
                 editorRef.current?.removeEventListener('mousedown', handleClick);
                 editorRef.current?.removeEventListener('contextmenu', (e) => e.preventDefault());
@@ -61,7 +63,7 @@ function TextOptimizer() {
         textChanges.setChanges([]);
         textState.setIsOptimizationComplete(false);
         textState.setOriginalText(textState.text);
-        
+
         try {
             const reader = await optimizeText(textState.text, language, customPrompt);
             let newOptimizedText = '';
@@ -93,7 +95,7 @@ function TextOptimizer() {
             textChanges.setChanges([]);
             textState.setOptimizedText("");
             textState.setIsOptimizationComplete(false);
-            
+
             const newCursorPosition = saveCursorPosition(editorRef);
             textState.setCursorPosition(newCursorPosition);
 
@@ -129,31 +131,31 @@ function TextOptimizer() {
     };
 
     return (
-        <div className='flex flex-col gap-4'>
-            <div className='flex flex-row gap-4 items-center'>
-                <LanguageSelector
-                    language={language}
-                    setLanguage={setLanguage}
-                />
-                <div className="flex items-center gap-2">
-                    <Switch
-                        id="autoDetect"
-                        checked={autoDetectEnabled}
-                        onCheckedChange={handleAutoDetectChange}
+        <div className='flex flex-row gap-4'>
+            <div className='flex flex-col gap-4 flex-1'>
+                <div className='flex flex-row gap-4 items-center flex-1'>
+                    <LanguageSelector
+                        language={language}
+                        setLanguage={setLanguage}
                     />
-                    {isLoadingLanguageDetection ? (
-                        <Label htmlFor="autoDetect" className='text-xs text-gray-500 animate-pulse'>
-                            Auto-detecting language...
-                        </Label>
-                    ) : (
-                        <Label htmlFor="autoDetect" className='text-xs text-gray-500'>
-                            Auto-detect language
-                        </Label>
-                    )}
+                    <div className="flex items-center gap-2">
+                        <Switch
+                            id="autoDetect"
+                            checked={autoDetectEnabled}
+                            onCheckedChange={handleAutoDetectChange}
+                        />
+                        {isLoadingLanguageDetection ? (
+                            <Label htmlFor="autoDetect" className='text-xs text-gray-500 animate-pulse'>
+                                Auto-detecting language...
+                            </Label>
+                        ) : (
+                            <Label htmlFor="autoDetect" className='text-xs text-gray-500'>
+                                Auto-detect language
+                            </Label>
+                        )}
+                    </div>
                 </div>
-            </div>
-            <div className='flex flex-row gap-4'>
-                <div className='flex flex-col gap-4 flex-1'>
+                <div className='flex flex-col gap-4'>
                     <CustomPromptInput
                         customPrompt={customPrompt}
                         setCustomPrompt={setCustomPrompt}
@@ -165,7 +167,12 @@ function TextOptimizer() {
                         onOptimize={() => handleOptimize(language, customPrompt)}
                     />
                 </div>
-
+            </div>
+            <div className='flex flex-col gap-4'>
+                <ModelSelector
+                    model={modelType}
+                    setModel={setModelType}
+                />
                 <EditorControls
                     isLoading={isLoading}
                     isOptimizationComplete={textState.isOptimizationComplete}
