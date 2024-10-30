@@ -8,6 +8,7 @@ import {
 import { StringOutputParser } from "npm:@langchain/core/output_parsers";
 import { Response } from "npm:express@4";
 import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
+import { BaseChatModel } from "npm:@langchain/core/language_models/chat_models";
 
 const env = await load();
 
@@ -58,13 +59,13 @@ const prompt = ChatPromptTemplate.fromMessages([
 
 export async function optimizeText(text: string, language: string, customPrompt: string, modelType: string, res: Response) {
     // Validate model type
-    const modelConfig = MODEL_MAP[modelType];
+    const modelConfig = MODEL_MAP[modelType as keyof typeof MODEL_MAP];
     if (!modelConfig) {
         return res.status(400).json({ error: `Unknown model type: ${modelType}` });
     }
 
-    // Initialize model
-    const model = new modelConfig.class(modelConfig.config);
+    // Initialize model with type casting
+    const model = new modelConfig.class(modelConfig.config) as BaseChatModel;
     
     // Create the chain using LCEL
     const chain = prompt.pipe(model).pipe(new StringOutputParser());

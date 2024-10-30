@@ -1,5 +1,5 @@
 // @deno-types="npm:@types/express@4"
-import express from "npm:express@4";
+import express, { Request, Response } from "npm:express@4";
 import { optimizeText } from "./optimize.ts";
 import { detectLanguage } from "./detectLanguage.ts";
 
@@ -11,12 +11,12 @@ app.use(express.json());
 // Serve static files from the 'dist' directory, used for production
 app.use(express.static("dist"));
 
-app.post('/api/optimize', async (req, res) => {
+app.post('/api/optimize', async (req: Request, res: Response) => {
     const { text, language, customPrompt, modelType } = req.body;
     await optimizeText(text, language, customPrompt, modelType, res);
 });
 
-app.post('/api/detect-language', async (req, res) => {
+app.post('/api/detect-language', async (req: Request, res: Response) => {
     const { text } = req.body;
     await detectLanguage(text, res);
 });
