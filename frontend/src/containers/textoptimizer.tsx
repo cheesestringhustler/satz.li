@@ -66,9 +66,9 @@ function TextOptimizer() {
 
         try {
             const reader = await optimizeText(
-                textState.text, 
-                language, 
-                customPrompt, 
+                textState.text,
+                language,
+                customPrompt,
                 modelType.toString()
             );
             let newOptimizedText = '';

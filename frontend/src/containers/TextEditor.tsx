@@ -67,11 +67,11 @@ function TextEditor({ editorRef, onInput, onOptimize }: TextEditorProps) {
     return (
         <div className='flex flex-col gap-2 mt-2 flex-1'>
             <span className='text-xs text-gray-500 text-end'>left click to apply, right click to reject changes</span>
-            <div
-                ref={resizeRef}
-                className="resize-y overflow-auto"
-                style={{ minHeight: '384px', maxHeight: '80vh' }}
-            >
+                <div
+                    ref={resizeRef}
+                    className="resize-y overflow-auto"
+                    style={{ minHeight: '384px', maxHeight: '80vh' }}
+                >
                 <div
                     ref={editorRef}
                     className="texteditor p-2 text-sm border rounded-md overflow-auto focus:border-gray-800 focus:dark:border-gray-200 whitespace-pre-wrap break-words outline-none"
