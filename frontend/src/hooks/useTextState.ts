@@ -1,13 +1,15 @@
 import { useState } from 'react';
 
-const DEFAULT_TEXT = `Dear Mr. Smith,
+const DEFAULT_TEXT = 'Ich gehe zu der Markt heute, weil ich brauche Äpfel und Bananen.';
 
-I received your offer yesterday and would like to get more informations about it. It would be helpful if you could provide me some details, especially regarding the delivery time and payment options.
+// `Dear Mr. Smith,
 
-Please let me know if it is possible to get a discount, since I am interessted in purchasing multiple units. Thank you in advance for your time and assistance.
+// I received your offer yesterday and would like to get more informations about it. It would be helpful if you could provide me some details, especially regarding the delivery time and payment options.
 
-Kind regards,
-John Doe`;
+// Please let me know if it is possible to get a discount, since I am interessted in purchasing multiple units. Thank you in advance for your time and assistance.
+
+// Kind regards,
+// John Doe`;
 
 export function useTextState() {
     const [originalText, setOriginalText] = useState("");

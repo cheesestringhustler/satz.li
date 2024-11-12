@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Quill from 'quill';
 import Delta from 'quill-delta';
-
+import { diff_match_patch } from 'diff-match-patch';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
@@ -65,21 +65,9 @@ function TextOptimizer() {
                     detectLanguageDebounced(text);
                 }
             });
-
-            // Add click handlers for accepting/rejecting changes
-            editorRef.current.addEventListener('click', (e) => {
-                const target = e.target as HTMLElement;
-                if (target.classList.contains('ql-change')) {
-                    const index = parseInt(target.getAttribute('data-index') || '0');
-                    handleChangeClick(index);
-                }
-            });
         }
 
         return () => {
-            if (editorRef.current) {
-                editorRef.current.removeEventListener('click', () => {});
-            }
             quillRef.current = undefined;
         };
     }, []);
@@ -99,29 +87,6 @@ function TextOptimizer() {
             }
         }
     }, [pendingChanges]);
-
-    const handleChangeClick = (index: number) => {
-        if (!quillRef.current || !pendingChanges?.ops?.[index]) return;
-
-        const op = pendingChanges.ops[index];
-        const currentContents = quillRef.current.getContents();
-        
-        // Create a new delta that applies just this change
-        const changeDelta = new Delta([op]);
-        quillRef.current.updateContents(changeDelta);
-
-        // Remove this change from pending changes
-        const newPendingChanges = new Delta(
-            pendingChanges.ops.filter((_, i) => i !== index)
-        );
-        setPendingChanges(newPendingChanges);
-
-        // If no more changes, clear optimization state
-        if (newPendingChanges.ops.length === 0) {
-            textState.setOptimizedText('');
-            textState.setIsOptimizationComplete(false);
-        }
-    };
 
     const handleOptimize = async (language: string, customPrompt: string) => {
         if (!quillRef.current) return;
@@ -155,33 +120,60 @@ function TextOptimizer() {
             const optimizedDelta = new Delta().insert(newOptimizedText);
             const changes = currentContents.diff(optimizedDelta);
             
-            // Apply changes with formatting
-            const formattedChanges = new Delta(changes.ops?.map(op => {
-                if (op.insert) {
-                    return { 
-                        ...op,
-                        attributes: { 
-                            ...op.attributes,
-                            class: 'ql-change ql-insertion',
-                            color: '#22c55e',
-                            background: '#dcfce7'
+            // Process changes to merge adjacent operations
+            const mergedOps: any[] = [];
+            let currentOp: any = null;
+
+            changes.ops?.forEach(op => {
+                if (op.retain) {
+                    if (currentOp) {
+                        mergedOps.push(currentOp);
+                        currentOp = null;
+                    }
+                    mergedOps.push(op);
+                } else {
+                    if (!currentOp) {
+                        currentOp = { ...op };
+                    } else {
+                        // Merge with previous op if they're the same type
+                        if ((op.insert && currentOp.insert) || (op.delete && currentOp.delete)) {
+                            if (op.insert) currentOp.insert += op.insert;
+                            if (op.delete) currentOp.delete += op.delete;
+                        } else {
+                            mergedOps.push(currentOp);
+                            currentOp = { ...op };
                         }
-                    };
+                    }
                 }
-                if (op.delete) {
-                    return { 
-                        ...op,
-                        attributes: { 
-                            ...op.attributes,
-                            class: 'ql-change ql-deletion',
-                            color: '#ef4444',
-                            background: '#fee2e2',
-                            strike: true
-                        }
-                    };
+            });
+            if (currentOp) {
+                mergedOps.push(currentOp);
+            }
+
+            // Apply formatting to merged changes
+            const formattedChanges = new Delta();
+            mergedOps.forEach(op => {
+                console.log(op);
+                if (op.retain) {
+                    formattedChanges.retain(op.retain);
+                } else if (op.insert) {
+                    formattedChanges.insert(op.insert, {
+                        class: 'ql-change ql-insertion',
+                        color: '#22c55e',
+                        background: '#dcfce7'
+                    });
+                } else if (op.delete) {
+                    // First insert the deleted text with deletion styling
+                    formattedChanges.insert(quillRef.current!.getText().substr(formattedChanges.length(), op.delete), {
+                        class: 'ql-change ql-deletion',
+                        color: '#ef4444',
+                        background: '#fee2e2',
+                        strike: true
+                    });
+                    // Then delete it
+                    formattedChanges.delete(op.delete);
                 }
-                return op;
-            }));
+            });
 
             setPendingChanges(formattedChanges);
             textState.setOptimizedText(newOptimizedText);
