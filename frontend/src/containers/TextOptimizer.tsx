@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Quill from 'quill';
+import Delta from 'quill-delta';
 
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -7,20 +9,32 @@ import CustomPromptInput from '@/containers/CustomPromptInput';
 import EditorControls from '@/containers/EditorControls';
 import { LanguageSelector } from '@/containers/LanguageSelector';
 import ModelSelector from '@/containers/ModelSelector';
-import TextEditor from '@/containers/TextEditor';
 import { useLanguageDetection } from '@/hooks/useLanguageDetection';
-import { useTextChanges } from '@/hooks/useTextChanges';
 import { useTextState } from '@/hooks/useTextState';
 import { optimizeText } from '@/services/api';
-import { saveCursorPosition } from '@/utils/cursorUtils';
+
+// Define Quill options
+const QUILL_OPTIONS = {
+    theme: 'snow',
+    modules: {
+        toolbar: false,
+        history: {
+            delay: 2000,
+            maxStack: 500,
+            userOnly: true
+        }
+    },
+    placeholder: 'Enter your text here...',
+};
 
 function TextOptimizer() {
     const editorRef = useRef<HTMLDivElement>(null);
+    const quillRef = useRef<Quill>();
     const textState = useTextState();
-    const textChanges = useTextChanges(editorRef, textState.text, textState.cursorPosition);
     const [isLoading, setIsLoading] = useState(false);
     const [modelType, setModelType] = useState('gpt-4o-mini');
     const [customPrompt, setCustomPrompt] = useState('');
+    const [pendingChanges, setPendingChanges] = useState<Delta>();
 
     const {
         language,
@@ -32,35 +46,88 @@ function TextOptimizer() {
         detectLanguageDebounced
     } = useLanguageDetection();
 
-    // Initialize editor content
+    // Initialize Quill editor
     useEffect(() => {
-        if (editorRef.current) {
-            editorRef.current.innerText = textState.text;
+        if (editorRef.current && !quillRef.current) {
+            quillRef.current = new Quill(editorRef.current, QUILL_OPTIONS);
+            
+            // Set default text
+            quillRef.current.setText(textState.text);
+            
+            // Handle text changes
+            quillRef.current.on('text-change', (delta, oldDelta, source) => {
+                if (source === 'user') {
+                    const text = quillRef.current?.getText() || '';
+                    textState.setText(text);
+                    setPendingChanges(undefined);
+                    textState.setOptimizedText('');
+                    textState.setIsOptimizationComplete(false);
+                    detectLanguageDebounced(text);
+                }
+            });
+
+            // Add click handlers for accepting/rejecting changes
+            editorRef.current.addEventListener('click', (e) => {
+                const target = e.target as HTMLElement;
+                if (target.classList.contains('ql-change')) {
+                    const index = parseInt(target.getAttribute('data-index') || '0');
+                    handleChangeClick(index);
+                }
+            });
         }
+
+        return () => {
+            if (editorRef.current) {
+                editorRef.current.removeEventListener('click', () => {});
+            }
+            quillRef.current = undefined;
+        };
     }, []);
 
-    // Apply changes when they update
+    // Apply pending changes to the editor
     useEffect(() => {
-        textChanges.applyChanges();
-    }, [textChanges.changes]);
+        if (quillRef.current && pendingChanges) {
+            // Save current selection
+            const selection = quillRef.current.getSelection();
+            
+            // Apply the changes
+            quillRef.current.updateContents(pendingChanges);
 
-    // Set up change click handlers
-    useEffect(() => {
-        if (editorRef.current) {
-            const handleClick = (e: MouseEvent) => textChanges.handleChangeClick(e, textState.setText);
-            editorRef.current.addEventListener('mousedown', handleClick);
-            editorRef.current.addEventListener('contextmenu', (e) => e.preventDefault());
-
-            return () => {
-                editorRef.current?.removeEventListener('mousedown', handleClick);
-                editorRef.current?.removeEventListener('contextmenu', (e) => e.preventDefault());
-            };
+            // Restore selection
+            if (selection) {
+                quillRef.current.setSelection(selection);
+            }
         }
-    }, [textChanges.handleChangeClick, textState.setText]);
+    }, [pendingChanges]);
+
+    const handleChangeClick = (index: number) => {
+        if (!quillRef.current || !pendingChanges?.ops?.[index]) return;
+
+        const op = pendingChanges.ops[index];
+        const currentContents = quillRef.current.getContents();
+        
+        // Create a new delta that applies just this change
+        const changeDelta = new Delta([op]);
+        quillRef.current.updateContents(changeDelta);
+
+        // Remove this change from pending changes
+        const newPendingChanges = new Delta(
+            pendingChanges.ops.filter((_, i) => i !== index)
+        );
+        setPendingChanges(newPendingChanges);
+
+        // If no more changes, clear optimization state
+        if (newPendingChanges.ops.length === 0) {
+            textState.setOptimizedText('');
+            textState.setIsOptimizationComplete(false);
+        }
+    };
 
     const handleOptimize = async (language: string, customPrompt: string) => {
+        if (!quillRef.current) return;
+
         setIsLoading(true);
-        textChanges.setChanges([]);
+        setPendingChanges(undefined);
         textState.setIsOptimizationComplete(false);
         textState.setOriginalText(textState.text);
 
@@ -71,8 +138,8 @@ function TextOptimizer() {
                 customPrompt,
                 modelType.toString()
             );
-            let newOptimizedText = '';
 
+            let newOptimizedText = '';
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) {
@@ -81,57 +148,75 @@ function TextOptimizer() {
                 }
                 const chunk = new TextDecoder().decode(value);
                 newOptimizedText += chunk;
-                textChanges.updateTextWithChanges(textState.text, newOptimizedText, false);
             }
-            textChanges.updateTextWithChanges(textState.text, newOptimizedText, true);
+
+            // Calculate changes using Delta
+            const currentContents = quillRef.current.getContents();
+            const optimizedDelta = new Delta().insert(newOptimizedText);
+            const changes = currentContents.diff(optimizedDelta);
+            
+            // Apply changes with formatting
+            const formattedChanges = new Delta(changes.ops?.map(op => {
+                if (op.insert) {
+                    return { 
+                        ...op,
+                        attributes: { 
+                            ...op.attributes,
+                            class: 'ql-change ql-insertion',
+                            color: '#22c55e',
+                            background: '#dcfce7'
+                        }
+                    };
+                }
+                if (op.delete) {
+                    return { 
+                        ...op,
+                        attributes: { 
+                            ...op.attributes,
+                            class: 'ql-change ql-deletion',
+                            color: '#ef4444',
+                            background: '#fee2e2',
+                            strike: true
+                        }
+                    };
+                }
+                return op;
+            }));
+
+            setPendingChanges(formattedChanges);
             textState.setOptimizedText(newOptimizedText);
         } catch (error) {
             console.error('Error:', error);
-            textState.setText("An error occurred while optimizing the text.");
+            quillRef.current.setText("An error occurred while optimizing the text.");
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleInput = useCallback(() => {
-        if (editorRef.current) {
-            const newText = editorRef.current.innerText;
-            textState.setText(newText);
-            textChanges.setChanges([]);
-            textState.setOptimizedText("");
-            textState.setIsOptimizationComplete(false);
-
-            const newCursorPosition = saveCursorPosition(editorRef);
-            textState.setCursorPosition(newCursorPosition);
-
-            detectLanguageDebounced(newText);
-        }
-    }, [detectLanguageDebounced]);
-
     const handleApplyChanges = useCallback(() => {
-        if (editorRef.current && textState.optimizedText) {
-            editorRef.current.innerText = textState.optimizedText;
+        if (quillRef.current && textState.optimizedText) {
+            quillRef.current.setText(textState.optimizedText);
             textState.setText(textState.optimizedText);
-            textChanges.setChanges([]);
-            textState.setOptimizedText("");
+            setPendingChanges(undefined);
+            textState.setOptimizedText('');
             textState.setIsOptimizationComplete(false);
         }
-    }, [textState, textChanges, editorRef]);
+    }, [textState]);
 
     const handleRevertChanges = useCallback(() => {
-        if (editorRef.current && textState.originalText) {
-            editorRef.current.innerText = textState.originalText;
+        if (quillRef.current && textState.originalText) {
+            quillRef.current.setText(textState.originalText);
             textState.setText(textState.originalText);
-            textChanges.setChanges([]);
-            textState.setOptimizedText("");
+            setPendingChanges(undefined);
+            textState.setOptimizedText('');
             textState.setIsOptimizationComplete(false);
         }
-    }, [textState, textChanges, editorRef]);
+    }, [textState]);
 
     const handleAutoDetectChange = (checked: boolean) => {
         setAutoDetectEnabled(checked);
         if (checked) {
-            detectLanguageCore(editorRef.current?.innerText || '');
+            detectLanguageCore(quillRef.current?.getText() || '');
         }
     };
 
@@ -166,11 +251,12 @@ function TextOptimizer() {
                         setCustomPrompt={setCustomPrompt}
                         onOptimize={() => handleOptimize(language, customPrompt)}
                     />
-                    <TextEditor
-                        editorRef={editorRef}
-                        onInput={handleInput}
-                        onOptimize={() => handleOptimize(language, customPrompt)}
-                    />
+                    <div className="flex flex-col gap-2">
+                        <div 
+                            ref={editorRef}
+                            className="border rounded-md min-h-[384px] max-h-[80vh]"
+                        />
+                    </div>
                 </div>
             </div>
             <div className='flex flex-col gap-4'>
