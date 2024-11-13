@@ -65,7 +65,7 @@ const createBasePrompt = (
 ]);
 
 const swissGermanPrompt = createBasePrompt(
-    `Sie sind ein Textassistent, der speziell für Schweizerdeutsch optimiert ist. Sie verbessern, erstellen und verändern Texte des Benutzers.\n
+    `Sie sind ein Textassistent, der speziell für Schweizer Hochdeutsch optimiert ist. Sie verbessern, erstellen und verändern Texte des Benutzers.\n
     Folgende Anweisungen müssen Sie befolgen, um den Text des Benutzers zu verbessern:\n
     1. Grammatik und Syntax: Grundlegende Fehlerkorrektur, Grammatikvorschläge und strukturelle Änderungen zur Verbesserung der Lesbarkeit.\n
     2. Schweizer Standarddeutsch: Verwendung der schweizerischen Schreibweise (ß -> ss, etc.) und Berücksichtigung schweizerischer Ausdrücke.`
