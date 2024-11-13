@@ -35,6 +35,7 @@ function TextOptimizer() {
     const [modelType, setModelType] = useState('gpt-4o-mini');
     const [customPrompt, setCustomPrompt] = useState('');
     const [pendingChanges, setPendingChanges] = useState<Delta>();
+    const dmp = useRef(new diff_match_patch());
 
     const {
         language,
@@ -92,91 +93,77 @@ function TextOptimizer() {
         if (!quillRef.current) return;
 
         setIsLoading(true);
-        setPendingChanges(undefined);
-        textState.setIsOptimizationComplete(false);
-        textState.setOriginalText(textState.text);
+        const originalText = textState.text;
+        textState.setOriginalText(originalText);
+        let accumulatedText = '';
 
         try {
             const reader = await optimizeText(
-                textState.text,
+                originalText,
                 language,
                 customPrompt,
                 modelType.toString()
             );
 
-            let newOptimizedText = '';
             while (true) {
                 const { done, value } = await reader.read();
+                const chunk = new TextDecoder().decode(value);
+                accumulatedText += chunk;
+
+                // Reset the editor content first
+                const delta = new Delta().insert(originalText);
+                quillRef.current.setContents(delta);
+
+                // Calculate diffs based on completion status
+                let diffs;
+                if (done) {
+                    console.log('done');
+                    diffs = dmp.current.diff_main(originalText, accumulatedText);
+                } else {
+                    // Compare only up to the current stream position
+                    const comparisonLength = accumulatedText.length;
+                    const textToCompare = originalText.slice(0, comparisonLength);
+                    diffs = dmp.current.diff_main(textToCompare, accumulatedText);
+                }
+                dmp.current.diff_cleanupSemantic(diffs);
+
+                // Apply formatted changes
+                const formattedChanges = new Delta();
+
+                diffs.forEach(([operation, text]) => {
+                    if (operation === 0) { // Unchanged text
+                        formattedChanges.retain(text.length);
+                    } else if (operation === -1) { // Deletion
+                        formattedChanges.delete(text.length);
+                        formattedChanges.insert(text, {
+                            color: '#ef4444',
+                            strike: true,
+                            background: '#fee2e2'
+                        });
+                    } else if (operation === 1) { // Insertion
+                        formattedChanges.insert(text, {
+                            color: '#22c55e',
+                            background: '#dcfce7'
+                        });
+                    }
+                });
+
+                // Only retain remaining text if we're still streaming
+                if (!done) {
+                    const remainingLength = originalText.length - accumulatedText.length;
+                    if (remainingLength > 0) {
+                        formattedChanges.retain(remainingLength);
+                    }
+                }
+
+                quillRef.current.updateContents(formattedChanges);
+                textState.setOptimizedText(accumulatedText);
+
                 if (done) {
                     textState.setIsOptimizationComplete(true);
                     break;
                 }
-                const chunk = new TextDecoder().decode(value);
-                newOptimizedText += chunk;
             }
-
-            // Calculate changes using Delta
-            const currentContents = quillRef.current.getContents();
-            const optimizedDelta = new Delta().insert(newOptimizedText);
-            const changes = currentContents.diff(optimizedDelta);
-            
-            // Process changes to merge adjacent operations
-            const mergedOps: any[] = [];
-            let currentOp: any = null;
-
-            changes.ops?.forEach(op => {
-                if (op.retain) {
-                    if (currentOp) {
-                        mergedOps.push(currentOp);
-                        currentOp = null;
-                    }
-                    mergedOps.push(op);
-                } else {
-                    if (!currentOp) {
-                        currentOp = { ...op };
-                    } else {
-                        // Merge with previous op if they're the same type
-                        if ((op.insert && currentOp.insert) || (op.delete && currentOp.delete)) {
-                            if (op.insert) currentOp.insert += op.insert;
-                            if (op.delete) currentOp.delete += op.delete;
-                        } else {
-                            mergedOps.push(currentOp);
-                            currentOp = { ...op };
-                        }
-                    }
-                }
-            });
-            if (currentOp) {
-                mergedOps.push(currentOp);
-            }
-
-            // Apply formatting to merged changes
-            const formattedChanges = new Delta();
-            mergedOps.forEach(op => {
-                console.log(op);
-                if (op.retain) {
-                    formattedChanges.retain(op.retain);
-                } else if (op.insert) {
-                    formattedChanges.insert(op.insert, {
-                        class: 'ql-change ql-insertion',
-                        color: '#22c55e',
-                        background: '#dcfce7'
-                    });
-                } else if (op.delete) {
-                    // First insert the deleted text with deletion styling
-                    formattedChanges.insert(quillRef.current!.getText().substr(formattedChanges.length(), op.delete), {
-                        class: 'ql-change ql-deletion',
-                        color: '#ef4444',
-                        background: '#fee2e2',
-                        strike: true
-                    });
-                    // Then delete it
-                    formattedChanges.delete(op.delete);
-                }
-            });
-
-            setPendingChanges(formattedChanges);
-            textState.setOptimizedText(newOptimizedText);
         } catch (error) {
             console.error('Error:', error);
             quillRef.current.setText("An error occurred while optimizing the text.");
