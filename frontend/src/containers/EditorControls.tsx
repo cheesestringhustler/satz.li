@@ -16,7 +16,7 @@ const EditorControls = ({
     onRevertChanges
 }: EditorControlsProps) => {
     return (
-        <div className="flex flex-col items-start gap-2 self-start">
+        <div className="flex flex-col items-start gap-2 self-start flex-1 max-h-[476px]">
             <Button onClick={onOptimize} disabled={isLoading}>
                 {isLoading ? "Optimizing..." : "Optimize"}
             </Button>

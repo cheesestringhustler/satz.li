@@ -1,7 +1,7 @@
 import languages from '@/assets/languages.json';
 
 export async function optimizeText(text: string, languageCode: string, customPrompt: string, modelType: string): Promise<ReadableStreamDefaultReader<Uint8Array>> {
-    const language = languages.find(lang => lang.code === languageCode)?.name || languageCode;
+    const language = languageCode; //languages.find(lang => lang.code === languageCode)?.name || languageCode;
 
     const response = await fetch('/api/optimize', {
         method: 'POST',
