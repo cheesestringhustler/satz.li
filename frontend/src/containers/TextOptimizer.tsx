@@ -117,7 +117,6 @@ function TextOptimizer() {
                 // Calculate diffs based on completion status
                 let diffs;
                 if (done) {
-                    console.log('done');
                     diffs = dmp.current.diff_main(originalText, accumulatedText);
                 } else {
                     // Compare only up to the current stream position

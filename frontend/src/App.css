@@ -1,64 +1,60 @@
+/* Base styles */
 html, body, #root {
   margin: 0;
   padding: 0;
 }
 
-.change { cursor: pointer; }
-.light .texteditor .change.insertion { text-decoration: none; color: #22c55e; background-color: #dcfce7; }
-.light .texteditor .change.deletion { text-decoration: line-through; color: #ef4444; background-color: #fee2e2; }
-.dark .texteditor .change.insertion { text-decoration: none; color: #4ade80; background-color: #14532d; }
-.dark .texteditor .change.deletion { text-decoration: line-through; color: #fca5a5; background-color: #7f1d1d; }
-.light .texteditor .change:hover { background-color: rgba(0, 0, 0, 0.1); }
-.dark .texteditor .change:hover { background-color: rgba(255, 255, 255, 0.1); }
-
-.ql-change {
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.ql-change:hover {
-    filter: brightness(0.95);
-}
-
-/* Light theme */
-.light .ql-change.ql-insertion { 
-    text-decoration: none;
-    color: #22c55e;
-    background-color: #dcfce7;
-}
-
-.light .ql-change.ql-deletion { 
-    color: #ef4444;
-    background-color: #fee2e2;
-    text-decoration: line-through;
-}
-
-/* Dark theme */
-.dark .ql-change.ql-insertion { 
-    text-decoration: none;
-    color: #4ade80;
-    background-color: #14532d;
-}
-
-.dark .ql-change.ql-deletion { 
-    color: #fca5a5;
-    background-color: #7f1d1d;
-    text-decoration: line-through;
-}
-
-/* Hover effects */
-.light .ql-change:hover { background-color: rgba(0, 0, 0, 0.1); }
-.dark .ql-change:hover { background-color: rgba(255, 255, 255, 0.1); }
-
+/* Quill editor base styles */
 .ql-container {
-    font-family: inherit;
-    font-size: 0.875rem;
+  font-family: inherit;
+  font-size: 0.875rem;
 }
 
 .ql-editor {
-    padding: 0;
+  padding: 10px;
+  height: 100%;
 }
 
 .ql-editor p {
-    margin: 0;
+  margin: 0;
+}
+
+/* Change tracking styles */
+.ql-change {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* Light theme */
+.light .ql-change.ql-insertion {
+  color: #22c55e;
+  background-color: #dcfce7;
+  text-decoration: none;
+}
+
+.light .ql-change.ql-deletion {
+  color: #ef4444;
+  background-color: #fee2e2;
+  text-decoration: line-through;
+}
+
+.light .ql-change:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark theme */
+.dark .ql-change.ql-insertion {
+  color: #4ade80;
+  background-color: #14532d;
+  text-decoration: none;
+}
+
+.dark .ql-change.ql-deletion {
+  color: #fca5a5;
+  background-color: #7f1d1d;
+  text-decoration: line-through;
+}
+
+.dark .ql-change:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
