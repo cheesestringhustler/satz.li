@@ -93,8 +93,8 @@ export async function optimizeText(text: string, language: string, customPrompt:
             throw new Error(`Unknown model type: ${modelType}`);
         }
 
-        // Initialize model
-        const model = new modelConfig.class(modelConfig.config);
+        // Initialize model with explicit typing
+        const model = new modelConfig.class(modelConfig.config) as BaseChatModel;
         
         // Select appropriate prompt based on language
         const prompt = {
@@ -103,7 +103,8 @@ export async function optimizeText(text: string, language: string, customPrompt:
             'en': englishPrompt
         }[language] || englishPrompt;  // Default to English if language not found
 
-        const chain = prompt.pipe(model).pipe(new StringOutputParser());
+        // Create chain with proper type assertions
+        const chain = prompt.pipe(model as BaseChatModel).pipe(new StringOutputParser());
         const stream = await chain.stream({ text, language, customPrompt });
 
         // Set response headers

@@ -6,6 +6,8 @@ interface EditorControlsProps {
     onOptimize: () => void;
     onApplyChanges: () => void;
     onRevertChanges: () => void;
+    onCopy: () => void;
+    onPaste: () => void;
 }
 
 const EditorControls = ({
@@ -13,7 +15,9 @@ const EditorControls = ({
     isOptimizationComplete,
     onOptimize,
     onApplyChanges,
-    onRevertChanges
+    onRevertChanges,
+    onCopy,
+    onPaste
 }: EditorControlsProps) => {
     return (
         <div className="flex flex-col items-start gap-7 self-start max-h-[476px]">
@@ -21,12 +25,20 @@ const EditorControls = ({
                 {isLoading ? "Optimizing..." : "Optimize"}
             </Button>
             <div className='flex-1'></div>
-            <div className='flex flex-nowrap gap-2'>
+            <div className='flex flex-nowrap gap-2'>          
                 <Button onClick={onApplyChanges} disabled={!isOptimizationComplete}>
                     Apply All
                 </Button>
                 <Button onClick={onRevertChanges} disabled={!isOptimizationComplete}>
                     Revert
+                </Button>
+            </div>
+            <div className='flex flex-nowrap gap-2'>
+                <Button onClick={onCopy}>
+                    Copy
+                </Button>
+                <Button onClick={onPaste}>
+                    Paste
                 </Button>
             </div>
         </div>

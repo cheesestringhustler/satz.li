@@ -22,7 +22,7 @@ export function useLanguageDetection({ initialAutoDetect = false }: UseLanguageD
         setIsLoading(true);
         try {
             const detectedLanguage = await detectLanguage(currentSample);
-            if (detectedLanguage !== 'none') {
+            if (detectedLanguage !== 'none' && detectedLanguage !== 'no') {
                 setLanguage(detectedLanguage);
                 setLastDetectedSample(currentSample);
             }

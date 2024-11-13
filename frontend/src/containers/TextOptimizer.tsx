@@ -63,7 +63,9 @@ function TextOptimizer() {
                     setPendingChanges(undefined);
                     textState.setOptimizedText('');
                     textState.setIsOptimizationComplete(false);
-                    detectLanguageDebounced(text);
+                    if (autoDetectEnabled) {
+                        detectLanguageDebounced(text);
+                    }
                 }
             });
         }
@@ -71,7 +73,7 @@ function TextOptimizer() {
         return () => {
             quillRef.current = undefined;
         };
-    }, []);
+    }, [autoDetectEnabled]);
 
     // Apply pending changes to the editor
     useEffect(() => {
@@ -198,6 +200,28 @@ function TextOptimizer() {
         }
     };
 
+    const handleCopy = useCallback(async () => {
+        if (quillRef.current) {
+            const text = quillRef.current.getText();
+            await navigator.clipboard.writeText(text);
+        }
+    }, []);
+
+    const handlePaste = useCallback(async () => {
+        if (quillRef.current) {
+            try {
+                const text = await navigator.clipboard.readText();
+                quillRef.current.setText(text);
+                textState.setText(text);
+                if (autoDetectEnabled) {
+                    detectLanguageDebounced(text);
+                }
+            } catch (error) {
+                console.error('Failed to paste:', error);
+            }
+        }
+    }, [autoDetectEnabled]);
+
     return (
         <div className='flex flex-row gap-4'>
             <div className='flex flex-col gap-4 flex-1'>
@@ -248,6 +272,8 @@ function TextOptimizer() {
                     onOptimize={() => handleOptimize(language, customPrompt)}
                     onApplyChanges={handleApplyChanges}
                     onRevertChanges={handleRevertChanges}
+                    onCopy={handleCopy}
+                    onPaste={handlePaste}
                 />
             </div>
         </div>
