@@ -23,8 +23,8 @@ function App() {
                   <h1>satz.li</h1><span className="text-sm text-gray-500">&nbsp; - AI-Powered Text Assistance</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <ModeToggle />
                   <LoginDialog />
+                  <ModeToggle />
                 </div>
               </header>
               <main className="container mx-auto px-4 py-6 w-full max-w-screen-lg flex-grow">

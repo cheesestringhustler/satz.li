@@ -269,6 +269,8 @@ function TextOptimizer() {
                 <EditorControls
                     isLoading={isLoading}
                     isOptimizationComplete={textState.isOptimizationComplete}
+                    text={textState.text}
+                    modelType={modelType}
                     onOptimize={() => handleOptimize(language, customPrompt)}
                     onApplyChanges={handleApplyChanges}
                     onRevertChanges={handleRevertChanges}

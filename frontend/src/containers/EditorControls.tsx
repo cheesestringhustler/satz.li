@@ -1,8 +1,13 @@
 import { Button } from '@/components/ui/button';
+import { calculateCredits } from '@/utils/creditCalculator';
+import { useEffect, useState, useMemo } from 'react';
+import debounce from 'lodash/debounce';
 
 interface EditorControlsProps {
     isLoading: boolean;
     isOptimizationComplete: boolean;
+    text: string;
+    modelType: string;
     onOptimize: () => void;
     onApplyChanges: () => void;
     onRevertChanges: () => void;
@@ -13,17 +18,43 @@ interface EditorControlsProps {
 const EditorControls = ({
     isLoading,
     isOptimizationComplete,
+    text,
+    modelType,
     onOptimize,
     onApplyChanges,
     onRevertChanges,
     onCopy,
     onPaste
 }: EditorControlsProps) => {
+    const [requiredCredits, setRequiredCredits] = useState(0);
+
+    // Create debounced calculation function
+    const debouncedCalculate = useMemo(
+        () => debounce((text: string, modelType: string) => {
+            const credits = calculateCredits(text, modelType);
+            setRequiredCredits(credits);
+        }, 500),
+        []
+    );
+
+    // Update credits when text or model changes
+    useEffect(() => {
+        debouncedCalculate(text, modelType);
+        return () => {
+            debouncedCalculate.cancel();
+        };
+    }, [text, modelType, debouncedCalculate]);
+
     return (
         <div className="flex flex-col items-start gap-7 self-start max-h-[476px]">
-            <Button onClick={onOptimize} disabled={isLoading}>
-                {isLoading ? "Optimizing..." : "Optimize"}
-            </Button>
+            <div className="flex flex-col gap-2">
+                <Button onClick={onOptimize} disabled={isLoading}>
+                    {isLoading ? "Optimizing..." : "Optimize"}
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                    Required credits: {requiredCredits}
+                </span>
+            </div>
             <div className='flex-1'></div>
             <div className='flex flex-nowrap gap-2'>          
                 <Button onClick={onApplyChanges} disabled={!isOptimizationComplete}>
