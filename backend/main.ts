@@ -1,18 +1,25 @@
 // @deno-types="npm:@types/express@4"
-import express, { Request, Response, NextFunction, CookieOptions } from "npm:express@4";
+import express, { 
+    Request, 
+    Response, 
+    NextFunction, 
+    CookieOptions 
+} from "npm:express@4";
+import jwt from "npm:jsonwebtoken";
+import cookieParser from "npm:cookie-parser";
+import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
 import { optimizeText } from "./optimize.ts";
 import { detectLanguage } from "./detectLanguage.ts";
-import jwt from "npm:jsonwebtoken";
 import { sendMagicLink } from "./auth/sendMagicLink.ts";
 import { validateEmail } from "./auth/validateEmail.ts";
-import cookieParser from "npm:cookie-parser";
 
 type RequestWithCookies = Request & { cookies: { [key: string]: string } };
 
+const env = await load();
 const app = express();
 const port = 3000;
-const JWT_SECRET = Deno.env.get("JWT_SECRET") || "your-secret-key";
-const isProduction = Deno.env.get("NODE_ENV") === "production";
+const JWT_SECRET = env.JWT_SECRET;
+const isProduction = env.NODE_ENV === "production";
 
 app.use(express.json());
 app.use(cookieParser());

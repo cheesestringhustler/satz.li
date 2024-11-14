@@ -16,7 +16,7 @@ export function LanguageSelector({ language, setLanguage }: LanguageSelectorProp
     return (
         <div className='flex flex-col gap-2'>
             <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[190px]">
                     <SelectValue placeholder="Select language" />
                 </SelectTrigger>
                 <SelectContent>
