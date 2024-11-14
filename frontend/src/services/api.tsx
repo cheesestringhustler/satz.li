@@ -1,5 +1,10 @@
 import languages from '@/assets/languages.json';
 
+const getAuthHeader = () => {
+    const token = localStorage.getItem('accessToken');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
 export async function optimizeText(text: string, languageCode: string, customPrompt: string, modelType: string): Promise<ReadableStreamDefaultReader<Uint8Array>> {
     const language = languageCode; //languages.find(lang => lang.code === languageCode)?.name || languageCode;
 
@@ -7,6 +12,7 @@ export async function optimizeText(text: string, languageCode: string, customPro
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            ...getAuthHeader(),
         },
         body: JSON.stringify({ text, language, customPrompt, modelType }),
     });
@@ -26,7 +32,10 @@ export async function optimizeText(text: string, languageCode: string, customPro
 export async function detectLanguage(text: string): Promise<string> {
     const response = await fetch('/api/detect-language', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            ...getAuthHeader(),
+        },
         body: JSON.stringify({ text })
     });
 
@@ -36,4 +45,31 @@ export async function detectLanguage(text: string): Promise<string> {
 
     const { detectedLanguage } = await response.json();
     return detectedLanguage;
+}
+
+export async function requestMagicLink(email: string): Promise<void> {
+    const response = await fetch('/api/auth/request-magic-link', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to send magic link');
+    }
+}
+
+export async function verifyMagicLink(token: string): Promise<string> {
+    const response = await fetch(`/api/auth/verify?token=${token}`);
+    
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to verify magic link');
+    }
+
+    const { accessToken } = await response.json();
+    return accessToken;
 }

@@ -1,9 +1,9 @@
 import { ThemeProvider } from "@/components/theme-provider"
-import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/mode-toggle';
 import TextOptimizer from '@/containers/TextOptimizer';
 import './App.css';
 import { useTheme } from "@/components/theme-provider"
+import { LoginDialog } from '@/containers/LoginDialog';
 
 function App() {
   const { theme } = useTheme()
@@ -18,7 +18,7 @@ function App() {
           </div>
           <div className="flex items-center gap-2">
             <ModeToggle />
-            <Button>Login</Button>
+            <LoginDialog />
           </div>
         </header>
         <main className="container mx-auto px-4 py-6 w-full max-w-screen-lg flex-grow">
