@@ -20,23 +20,9 @@ export function LoginDialog() {
   const [showLogout, setShowLogout] = useState(false)
   
   useEffect(() => {
-    let mounted = true;
-
     // Check auth status on mount
-    const checkAuth = async () => {
-      const status = await checkAuthStatus();
-      if (mounted) {
-        setIsLoggedIn(status);
-      }
-    };
-
-    checkAuth();
-
-    // Cleanup function
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    checkAuthStatus().then(setIsLoggedIn)
+  }, [])
 
   const handleRequestMagicLink = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -26,5 +26,5 @@ export function VerifyAuth() {
         verifyToken();
     }, [searchParams, navigate]);
 
-    return <div>Verifying...</div>;
+    return <div>Logging in ...</div>;
 } 

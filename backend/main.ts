@@ -12,8 +12,11 @@ import { optimizeText } from "./optimize.ts";
 import { detectLanguage } from "./detectLanguage.ts";
 import { sendMagicLink } from "./auth/sendMagicLink.ts";
 import { validateEmail } from "./auth/validateEmail.ts";
+import { validateToken, revokeToken, validateMagicLinkToken, createUserSession } from "./db/users.ts";
+import { runMigrations } from "./db/migrations.ts";
 
 type RequestWithCookies = Request & { cookies: { [key: string]: string } };
+type AuthenticatedRequest = Request & { user: { email: string, credits_balance: number } };
 
 const env = await load();
 const app = express();
@@ -37,21 +40,46 @@ const cookieConfig: CookieOptions = {
 };
 
 // Middleware to verify JWT token
-const authenticateToken = (req: RequestWithCookies, res: Response, next: NextFunction) => {
+const authenticateToken = async (req: RequestWithCookies, res: Response, next: NextFunction) => {
     const token = req.cookies.accessToken;
 
     if (!token) {
         return res.status(401).json({ error: 'Authentication required' });
     }
 
-    jwt.verify(token, JWT_SECRET, (err: jwt.VerifyErrors | null, user: jwt.JwtPayload | undefined) => {
-        if (err) {
+    try {
+        // First verify JWT signature to fail fast if token is malformed
+        const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
+        
+        // Then check database validity
+        const user = await validateToken(token);
+        if (!user) {
             res.clearCookie('accessToken', cookieConfig);
-            return res.status(403).json({ error: 'Invalid or expired token' });
+            return res.status(401).json({ error: 'Token has been revoked or expired' });
         }
-        (req as Request & { user: jwt.JwtPayload }).user = user;
+
+        // Additional check for token payload match
+        if (decoded.email !== user.email) {
+            res.clearCookie('accessToken', cookieConfig); 
+            return res.status(401).json({ error: 'Token validation failed' });
+        }
+
+        // Token is valid, attach user info to request
+        (req as AuthenticatedRequest).user = {
+            email: user.email,
+            credits_balance: user.credits_balance
+        };
         next();
-    });
+    } catch (err) {
+        // More specific error handling
+        res.clearCookie('accessToken', cookieConfig);
+        if (err instanceof jwt.JsonWebTokenError) {
+            return res.status(401).json({ error: 'Invalid token format' });
+        } else if (err instanceof jwt.TokenExpiredError) {
+            return res.status(401).json({ error: 'Token has expired' });
+        }
+        return res.status(500).json({ error: 'Authentication error' });
+    }
 };
 
 // Authentication endpoints
@@ -66,23 +94,40 @@ app.post('/api/auth/request-magic-link', async (req: Request, res: Response) => 
     res.json({ message: 'Magic link sent to email' });
 });
 
-app.get('/api/auth/verify', (req: Request, res: Response) => {
+app.get('/api/auth/verify', async (req: Request, res: Response) => {
     const { token } = req.query;
     
     try {
-        const decoded = jwt.verify(token as string, JWT_SECRET);
-        const accessToken = jwt.sign({ email: decoded.email }, JWT_SECRET, { expiresIn: '15m' });
+        const decoded = jwt.verify(token as string, JWT_SECRET) as jwt.JwtPayload;
         
-        // Set the cookie instead of sending the token in response
-        res.cookie('accessToken', accessToken, cookieConfig);
+        // Validate magic link token
+        const isValidMagicToken = await validateMagicLinkToken(token as string);
+        if (!isValidMagicToken) {
+            return res.status(400).json({ error: 'Magic link has expired or already been used' });
+        }
+
+        // Mark token as used and create session
+        const user = await createUserSession(decoded.email, token as string, JWT_SECRET);
+        
+        // Set the cookie
+        res.cookie('accessToken', user.accessToken, cookieConfig);
         res.json({ success: true });
     } catch (err) {
+        if (err instanceof jwt.JsonWebTokenError) {
+            return res.status(400).json({ error: 'Invalid magic link format' });
+        } else if (err instanceof jwt.TokenExpiredError) {
+            return res.status(400).json({ error: 'Magic link has expired' });
+        }
         res.status(400).json({ error: 'Invalid or expired magic link' });
     }
 });
 
 // Add a logout endpoint
-app.post('/api/auth/logout', (req: Request, res: Response) => {
+app.post('/api/auth/logout', async (req: RequestWithCookies, res: Response) => {
+    const token = req.cookies.accessToken;
+    if (token) {
+        await revokeToken(token);
+    }
     res.clearCookie('accessToken', cookieConfig);
     res.json({ success: true });
 });
@@ -100,8 +145,18 @@ app.post('/api/detect-language', authenticateToken, async (req: Request, res: Re
 
 // Add a new endpoint to check auth status
 app.get('/api/auth/status', authenticateToken, (req: Request, res: Response) => {
-    res.json({ authenticated: true });
+    const authenticatedReq = req as AuthenticatedRequest;
+    res.json({ 
+        authenticated: true,
+        user: {
+            email: authenticatedReq.user.email,
+            creditsBalance: authenticatedReq.user.credits_balance
+        }
+    });
 });
+
+// Run migrations before starting the server
+await runMigrations();
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
