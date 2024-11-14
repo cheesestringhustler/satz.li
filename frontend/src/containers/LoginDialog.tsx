@@ -17,15 +17,19 @@ export function LoginDialog() {
   const [step, setStep] = useState<"request" | "verify">("request")
   const [error, setError] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [credits, setCredits] = useState<number | null>(null)
   const [showLogout, setShowLogout] = useState(false)
   
   useEffect(() => {
     // Check auth status on mount and get email
     checkAuthStatus().then((status) => {
-      setIsLoggedIn(status)
-      if (status) {
+      setIsLoggedIn(status.authenticated)
+      if (status.authenticated) {
         const savedEmail = localStorage.getItem('userEmail')
         if (savedEmail) setEmail(savedEmail)
+        if (status.user.creditsBalance !== undefined) {
+          setCredits(status.user.creditsBalance)
+        }
       }
     })
   }, [])
@@ -77,13 +81,18 @@ export function LoginDialog() {
 
   if (isLoggedIn) {
     return (
-      <Button
-        onMouseEnter={() => setShowLogout(true)}
-        onMouseLeave={() => setShowLogout(false)}
-        onClick={handleLogout}
-      >
-        {showLogout ? "Logout" : email.slice(0, 6) + "..." + email.slice(-4)}
-      </Button>
+      <div className="flex items-center gap-2">
+        {credits !== null && (
+          <span className="text-sm text-gray-600">{credits} credits</span>
+        )}
+        <Button
+          onMouseEnter={() => setShowLogout(true)}
+          onMouseLeave={() => setShowLogout(false)}
+          onClick={handleLogout}
+        >
+          {showLogout ? "Logout" : email.slice(0, 6) + "..." + email.slice(-4)}
+        </Button>
+      </div>
     )
   }
 

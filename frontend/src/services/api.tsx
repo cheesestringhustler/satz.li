@@ -95,14 +95,22 @@ export async function logout(): Promise<void> {
     }
 }
 
-export async function checkAuthStatus(): Promise<boolean> {
+type CheckAuthStatusResponse = {
+    authenticated: boolean;
+    user: {
+        email: string;
+        creditsBalance: number;
+    };
+};
+
+export async function checkAuthStatus(): Promise<CheckAuthStatusResponse> {
     try {
         const response = await fetch('/api/auth/status', {
             method: 'GET',
             credentials: 'include', // Important for sending cookies
         });
-        return response.ok;
+        return response.json();
     } catch (err) {
-        return false;
+        return { authenticated: false, user: { email: '', creditsBalance: 0 } };
     }
 }
