@@ -8,7 +8,7 @@ export async function sendMagicLink(email: string) {
     
     // In a real application, you would send this link via email
     // For now, we'll just console.log it
-    const magicLink = `http://localhost:3000/verify?token=${token}`;
+    const magicLink = `http://localhost:3000/api/auth/verify?token=${token}`;
     console.log(`Magic link for ${email}: ${magicLink}`);
     
     // TODO: Implement actual email sending logic

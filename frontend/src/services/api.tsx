@@ -1,6 +1,6 @@
 import languages from '@/assets/languages.json';
 
-const getAuthHeader = () => {
+const getAuthHeader = (): Record<string, string> => {
     const token = localStorage.getItem('accessToken');
     return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
@@ -72,4 +72,30 @@ export async function verifyMagicLink(token: string): Promise<string> {
 
     const { accessToken } = await response.json();
     return accessToken;
+}
+
+export async function logout(): Promise<void> {
+    const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to logout');
+    }
+}
+
+export async function checkAuthStatus(): Promise<boolean> {
+    try {
+        const response = await fetch('/api/auth/status', {
+            method: 'GET',
+            credentials: 'include', // Important for sending cookies
+        });
+        return response.ok;
+    } catch (err) {
+        return false;
+    }
 }
