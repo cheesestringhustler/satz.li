@@ -2,10 +2,12 @@ import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
 
 const env = await load();
 
+const maxJWTTokenAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
 export const config = {
     jwt: {
         secret: env.JWT_SECRET,
-        maxAge: 15 * 60 * 1000, // 15 minutes in milliseconds
+        maxAge: maxJWTTokenAge,
     },
     environment: {
         isProduction: env.NODE_ENV === "production",
@@ -15,7 +17,7 @@ export const config = {
         httpOnly: true,
         secure: env.NODE_ENV === "production",
         sameSite: 'strict' as const,
-        maxAge: 15 * 60 * 1000, // Should match JWT maxAge
+        maxAge: maxJWTTokenAge,
         path: '/'
     },
     database: {

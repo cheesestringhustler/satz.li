@@ -20,8 +20,14 @@ export function LoginDialog() {
   const [showLogout, setShowLogout] = useState(false)
   
   useEffect(() => {
-    // Check auth status on mount
-    checkAuthStatus().then(setIsLoggedIn)
+    // Check auth status on mount and get email
+    checkAuthStatus().then((status) => {
+      setIsLoggedIn(status)
+      if (status) {
+        const savedEmail = localStorage.getItem('userEmail')
+        if (savedEmail) setEmail(savedEmail)
+      }
+    })
   }, [])
 
   const handleRequestMagicLink = async (e: React.FormEvent) => {
@@ -36,12 +42,14 @@ export function LoginDialog() {
     }
   }
 
+  // Verify magic link token via form submission
   const handleVerifyToken = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
     try {
-      await verifyMagicLink(token)
+      const response = await verifyMagicLink(token)
+      localStorage.setItem('userEmail', response.user.email) // Save email after successful verification
       window.location.reload()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to verify token")
@@ -60,6 +68,7 @@ export function LoginDialog() {
   const handleLogout = async () => {
     try {
       await logout()
+      localStorage.removeItem('userEmail')
       window.location.reload()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to logout")
@@ -73,7 +82,7 @@ export function LoginDialog() {
         onMouseLeave={() => setShowLogout(false)}
         onClick={handleLogout}
       >
-        {showLogout ? "Logout" : "Logged In"}
+        {showLogout ? "Logout" : email.slice(0, 6) + "..." + email.slice(-4)}
       </Button>
     )
   }

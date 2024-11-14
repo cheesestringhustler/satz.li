@@ -32,10 +32,10 @@ export const authenticateToken = async (
             return res.status(401).json({ error: 'Token validation failed' });
         }
 
-        // Refresh token if it expires in less than 5 minutes
+        // Refresh token if it expires in less than 3 days
         const tokenExp = decoded.exp! * 1000;
-        const fiveMinutes = 5 * 60 * 1000;
-        if (tokenExp - Date.now() < fiveMinutes) {
+        const threeDays = 3 * 24 * 60 * 60 * 1000;
+        if (tokenExp - Date.now() < threeDays) {
             const newToken = await refreshToken(user.id, user.email);
             res.cookie('accessToken', newToken, config.cookie);
         }

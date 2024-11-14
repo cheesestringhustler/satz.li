@@ -62,7 +62,15 @@ export async function requestMagicLink(email: string): Promise<void> {
     }
 }
 
-export async function verifyMagicLink(token: string): Promise<void> {
+type VerifyMagicLinkResponse = {
+    success: boolean;
+    user: {
+        email: string;
+        creditsBalance: number;
+    };
+};
+
+export async function verifyMagicLink(token: string): Promise<VerifyMagicLinkResponse> {
     const response = await fetch(`/api/auth/verify?token=${token}`);
     
     if (!response.ok) {
@@ -70,7 +78,7 @@ export async function verifyMagicLink(token: string): Promise<void> {
         throw new Error(error.error || 'Failed to verify magic link');
     }
 
-    await response.json();
+    return response.json();
 }
 
 export async function logout(): Promise<void> {

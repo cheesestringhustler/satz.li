@@ -15,8 +15,11 @@ export function VerifyAuth() {
 
         const verifyToken = async () => {
             try {
-                await verifyMagicLink(token);
-                navigate('/');
+                const response = await verifyMagicLink(token);
+                if (response.user.email) {
+                    localStorage.setItem('userEmail', response.user.email);
+                }
+                window.location.reload();
             } catch (error) {
                 console.error('Verification failed:', error);
                 navigate('/');

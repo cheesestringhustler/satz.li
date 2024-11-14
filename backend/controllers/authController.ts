@@ -35,7 +35,13 @@ export const verifyMagicLink = async (req: Request, res: Response) => {
         const { user, accessToken } = await createUserSession(decoded.email, token as string);
         
         res.cookie('accessToken', accessToken, config.cookie);
-        res.json({ success: true });
+        res.json({ 
+            success: true,
+            user: {
+                email: user.email,
+                creditsBalance: user.credits_balance
+            }
+        });
     } catch (err) {
         if (err instanceof jwt.JsonWebTokenError) {
             return res.status(400).json({ error: 'Invalid magic link format' });
