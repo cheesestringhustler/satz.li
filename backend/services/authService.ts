@@ -1,8 +1,8 @@
-import sql from './connection.ts';
-import jwt from 'npm:jsonwebtoken';
+import jwt from "npm:jsonwebtoken";
+import sql from "../db/connection.ts";
+import { config } from "../config/index.ts";
 
 export async function createOrGetUser(email: string) {
-    // Try to find existing user
     let user = await sql`
         SELECT id, email, credits_balance 
         FROM users 
@@ -10,7 +10,6 @@ export async function createOrGetUser(email: string) {
     `;
 
     if (user.length === 0) {
-        // Create new user if doesn't exist
         user = await sql`
             INSERT INTO users (email, credits_balance)
             VALUES (${email}, 100)
@@ -19,13 +18,6 @@ export async function createOrGetUser(email: string) {
     }
 
     return user[0];
-}
-
-export async function storeJWTToken(userId: number, token: string, expiresAt: Date) {
-    await sql`
-        INSERT INTO jwt_tokens (user_id, token, expires_at)
-        VALUES (${userId}, ${token}, ${expiresAt})
-    `;
 }
 
 export async function validateToken(token: string) {
@@ -59,30 +51,48 @@ export async function validateMagicLinkToken(token: string): Promise<boolean> {
     return magicToken.length > 0;
 }
 
-export async function createUserSession(email: string, token: string, jwtSecret: string) {
-    // Mark the magic link token as used
+export async function sendMagicLink(email: string) {
+    const token = jwt.sign({ email }, config.jwt.secret, { expiresIn: '15m' });
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    
+    await sql`
+        INSERT INTO magic_link_tokens (token, email, expires_at)
+        VALUES (${token}, ${email}, ${expiresAt})
+    `;
+    
+    const magicLink = `${config.environment.isProduction ? "https://satz.li" : "http://localhost:5173"}/a/verify?token=${token}`;
+    console.log(`Magic link for ${email}: ${magicLink}`);
+    
+    return true;
+}
+
+export async function createUserSession(email: string, token: string) {
     await sql`
         UPDATE magic_link_tokens
         SET used = true
         WHERE token = ${token}
     `;
     
-    // Create or get user
     const user = await createOrGetUser(email);
     
-    // Generate new access token
     const accessToken = jwt.sign(
         { 
             userId: user.id,
             email: user.email 
         }, 
-        jwtSecret, 
+        config.jwt.secret, 
         { expiresIn: '15m' }
     );
     
-    // Store access token in database
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     await storeJWTToken(user.id, accessToken, expiresAt);
 
     return { user, accessToken };
 }
+
+async function storeJWTToken(userId: number, token: string, expiresAt: Date) {
+    await sql`
+        INSERT INTO jwt_tokens (user_id, token, expires_at)
+        VALUES (${userId}, ${token}, ${expiresAt})
+    `;
+} 

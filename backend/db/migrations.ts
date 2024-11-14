@@ -1,5 +1,4 @@
 import sql from './connection.ts';
-import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
 
 // Create migrations table if it doesn't exist
 async function createMigrationsTable() {
