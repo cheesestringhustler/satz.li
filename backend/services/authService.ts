@@ -52,8 +52,12 @@ export async function validateMagicLinkToken(token: string): Promise<boolean> {
 }
 
 export async function sendMagicLink(email: string) {
-    const token = jwt.sign({ email }, config.jwt.secret, { expiresIn: '15m' });
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    const token = jwt.sign(
+        { email }, 
+        config.jwt.secret, 
+        { expiresIn: config.jwt.maxAge / 1000 } // Convert to seconds for JWT
+    );
+    const expiresAt = new Date(Date.now() + config.jwt.maxAge);
     
     await sql`
         INSERT INTO magic_link_tokens (token, email, expires_at)
@@ -81,10 +85,10 @@ export async function createUserSession(email: string, token: string) {
             email: user.email 
         }, 
         config.jwt.secret, 
-        { expiresIn: '15m' }
+        { expiresIn: config.jwt.maxAge / 1000 } // Convert to seconds for JWT
     );
     
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + config.jwt.maxAge);
     await storeJWTToken(user.id, accessToken, expiresAt);
 
     return { user, accessToken };
@@ -95,4 +99,17 @@ async function storeJWTToken(userId: number, token: string, expiresAt: Date) {
         INSERT INTO jwt_tokens (user_id, token, expires_at)
         VALUES (${userId}, ${token}, ${expiresAt})
     `;
+}
+
+export async function refreshToken(userId: number, email: string) {
+    const newAccessToken = jwt.sign(
+        { userId, email },
+        config.jwt.secret,
+        { expiresIn: config.jwt.maxAge / 1000 } // Convert to seconds for JWT
+    );
+    
+    const expiresAt = new Date(Date.now() + config.jwt.maxAge);
+    await storeJWTToken(userId, newAccessToken, expiresAt);
+    
+    return newAccessToken;
 } 

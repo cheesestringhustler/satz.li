@@ -5,6 +5,7 @@ const env = await load();
 export const config = {
     jwt: {
         secret: env.JWT_SECRET,
+        maxAge: 15 * 60 * 1000, // 15 minutes in milliseconds
     },
     environment: {
         isProduction: env.NODE_ENV === "production",
@@ -14,7 +15,7 @@ export const config = {
         httpOnly: true,
         secure: env.NODE_ENV === "production",
         sameSite: 'strict' as const,
-        maxAge: 15 * 60 * 1000,
+        maxAge: 15 * 60 * 1000, // Should match JWT maxAge
         path: '/'
     },
     database: {
