@@ -1,5 +1,5 @@
-import languages from '@/assets/languages.json';
 
+// ################ Text ################
 const getAuthHeader = (): Record<string, string> => {
     const token = localStorage.getItem('accessToken');
     return token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -47,6 +47,7 @@ export async function detectLanguage(text: string): Promise<string> {
     return detectedLanguage;
 }
 
+// ################ Auth ################
 export async function requestMagicLink(email: string): Promise<void> {
     const response = await fetch('/api/auth/request-magic-link', {
         method: 'POST',
@@ -112,5 +113,21 @@ export async function checkAuthStatus(): Promise<CheckAuthStatusResponse> {
         return response.json();
     } catch (err) {
         return { authenticated: false, user: { email: '', creditsBalance: 0 } };
+    }
+}
+
+// ################ Credits ################
+export async function getCreditsBalance(): Promise<number | object> {
+    try {
+        const response = await fetch('/api/credits', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader(),
+            },
+        });
+        return response.json();
+    } catch (err) {
+        return -1;
     }
 }

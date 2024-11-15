@@ -43,6 +43,7 @@ export const authenticateToken = async (
         // Set user on request
         const authenticatedReq = req as unknown as AuthenticatedRequest;
         authenticatedReq.user = {
+            id: user.id,
             email: user.email,
             credits_balance: user.credits_balance
         };

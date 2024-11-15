@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { useState, useEffect } from "react"
 import { requestMagicLink, verifyMagicLink, logout, checkAuthStatus } from "@/services/api"
+import { useCredits } from '@/context/CreditsContext';
 
 export function LoginDialog() {
   const [email, setEmail] = useState("")
@@ -17,22 +18,20 @@ export function LoginDialog() {
   const [step, setStep] = useState<"request" | "verify">("request")
   const [error, setError] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [credits, setCredits] = useState<number | null>(null)
   const [showLogout, setShowLogout] = useState(false)
+  const { credits, refreshCredits } = useCredits();
   
   useEffect(() => {
     // Check auth status on mount and get email
     checkAuthStatus().then((status) => {
       setIsLoggedIn(status.authenticated)
       if (status.authenticated) {
+        refreshCredits()
         const savedEmail = localStorage.getItem('userEmail')
         if (savedEmail) setEmail(savedEmail)
-        if (status.user.creditsBalance !== undefined) {
-          setCredits(status.user.creditsBalance)
-        }
       }
     })
-  }, [])
+  }, []);
 
   const handleRequestMagicLink = async (e: React.FormEvent) => {
     e.preventDefault()

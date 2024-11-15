@@ -6,6 +6,7 @@ export interface RequestWithCookies extends Request {
 
 export interface AuthenticatedRequest extends Request {
     user: {
+        id: number;
         email: string;
         credits_balance: number;
     }
