@@ -8,7 +8,7 @@ import {
 } from "../services/authService.ts";
 import { config } from "../config/index.ts";
 import jwt from "npm:jsonwebtoken";
-import { AuthenticatedRequest, RequestWithCookies } from "../types/express.ts";
+import { AuthenticatedRequest } from "../types/express.ts";
 
 export const requestMagicLink = async (req: Request, res: Response) => {
     const { email } = req.body;

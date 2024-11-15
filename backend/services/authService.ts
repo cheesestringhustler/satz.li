@@ -2,6 +2,8 @@ import jwt from "npm:jsonwebtoken";
 import sql from "../db/connection.ts";
 import { config } from "../config/index.ts";
 
+const DEFAULT_CREDITS_BALANCE = 500;
+
 export async function createOrGetUser(email: string) {
     let user = await sql`
         SELECT id, email, credits_balance 
@@ -12,7 +14,7 @@ export async function createOrGetUser(email: string) {
     if (user.length === 0) {
         user = await sql`
             INSERT INTO users (email, credits_balance)
-            VALUES (${email}, 100)
+            VALUES (${email}, ${DEFAULT_CREDITS_BALANCE})
             RETURNING id, email, credits_balance
         `;
     }

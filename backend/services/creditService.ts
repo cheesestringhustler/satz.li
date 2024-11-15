@@ -46,9 +46,11 @@ export function calculateCredits(modelType: string, { inputTokens, outputTokens 
 
     const inputCost = (inputTokens / 1000) * rates.inputRate;
     const outputCost = (outputTokens / 1000) * rates.outputRate;
-    console.log('tokens', inputTokens, outputTokens);
-    console.log('Math.ceil(inputCost + outputCost)', Math.ceil(inputCost + outputCost));
-    return Math.ceil(inputCost + outputCost);
+    
+    const totalCost = inputCost + outputCost;
+    const totalCostMultiplied = totalCost * 1000000;
+    
+    return Math.ceil(totalCostMultiplied);
 }
 
 export async function deductCredits(userId: number, creditsUsed: number, referenceId: number): Promise<number> {

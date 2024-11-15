@@ -1,6 +1,6 @@
 import { Request, Response } from "npm:express@4";
 import { getCreditsBalance } from "../services/creditService.ts";
-
+import { AuthenticatedRequest } from "../types/express.ts";
 export const getCreditsBalanceHandler = async (req: Request, res: Response) => {
     const authenticatedReq = req as AuthenticatedRequest;
     const userId = authenticatedReq.user.id;

@@ -59,7 +59,7 @@ function TextOptimizer() {
             quillRef.current.setText(textState.text);
             
             // Handle text changes
-            quillRef.current.on('text-change', (delta, oldDelta, source) => {
+            quillRef.current.on('text-change', (_delta, _oldDelta, source) => {
                 if (source === 'user') {
                     const text = quillRef.current?.getText() || '';
                     textState.setText(text);
