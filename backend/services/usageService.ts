@@ -76,7 +76,8 @@ export async function updateUsageLog(
     inputTokens: number,
     outputTokens: number,
     status: string = 'completed',
-    responseTime: number
+    responseTime: number,
+    creditsUsed?: number
 ): Promise<void> {
     // Validate all required parameters
     if (!usageLogId) throw new Error('usageLogId is required');
@@ -89,7 +90,8 @@ export async function updateUsageLog(
         inputTokens,
         outputTokens,
         status,
-        responseTime
+        responseTime,
+        creditsUsed
     };
 
     await sql`
@@ -97,7 +99,8 @@ export async function updateUsageLog(
         SET input_tokens = ${values.inputTokens},
             output_tokens = ${values.outputTokens},
             status = ${values.status},
-            response_time = ${values.responseTime}
+            response_time = ${values.responseTime},
+            ${values.creditsUsed ? sql`credits_used = ${values.creditsUsed}` : sql``}
         WHERE id = ${values.usageLogId}
     `;
 }

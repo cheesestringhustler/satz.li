@@ -1,13 +1,15 @@
 import { Button } from '@/components/ui/button';
-import { calculateCredits } from '@/utils/creditCalculator';
+import { getCreditsEstimate } from '@/services/api';
 import { useEffect, useState, useMemo } from 'react';
 import debounce from 'lodash/debounce';
 
 interface EditorControlsProps {
     isLoading: boolean;
     isOptimizationComplete: boolean;
-    text: string;
     modelType: string;
+    text: string;
+    languageCode: string;
+    customPrompt: string;
     onOptimize: () => void;
     onApplyChanges: () => void;
     onRevertChanges: () => void;
@@ -18,8 +20,10 @@ interface EditorControlsProps {
 const EditorControls = ({
     isLoading,
     isOptimizationComplete,
-    text,
     modelType,
+    text,
+    languageCode,
+    customPrompt,
     onOptimize,
     onApplyChanges,
     onRevertChanges,
@@ -30,20 +34,20 @@ const EditorControls = ({
 
     // Create debounced calculation function
     const debouncedCalculate = useMemo(
-        () => debounce((text: string, modelType: string) => {
-            const credits = calculateCredits(text, modelType);
-            setRequiredCredits(credits);
+        () => debounce(async (text: string, modelType: string, languageCode: string, customPrompt: string) => {
+            const credits = await getCreditsEstimate(modelType, { text, languageCode, customPrompt });
+            setRequiredCredits(credits.creditsEstimate);
         }, 500),
         []
     );
 
     // Update credits when text or model changes
     useEffect(() => {
-        debouncedCalculate(text, modelType);
+        debouncedCalculate(text, modelType, languageCode, customPrompt);
         return () => {
             debouncedCalculate.cancel();
         };
-    }, [text, modelType, debouncedCalculate]);
+    }, [text, modelType, languageCode, customPrompt, debouncedCalculate]);
 
     return (
         <div className="flex flex-col items-start gap-7 self-start max-h-[476px]">
@@ -52,7 +56,7 @@ const EditorControls = ({
                     {isLoading ? "Optimizing..." : "Optimize"}
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                    Required credits: ~{requiredCredits}
+                    {requiredCredits > 0 ? `Required credits: ~${requiredCredits}` : ''}
                 </span>
             </div>
             <div className='flex-1'></div>

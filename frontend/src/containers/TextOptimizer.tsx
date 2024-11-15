@@ -274,6 +274,8 @@ function TextOptimizer() {
                     isLoading={isLoading}
                     isOptimizationComplete={textState.isOptimizationComplete}
                     text={textState.text}
+                    languageCode={language}
+                    customPrompt={customPrompt}
                     modelType={modelType}
                     onOptimize={() => handleOptimize(language, customPrompt)}
                     onApplyChanges={handleApplyChanges}

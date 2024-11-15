@@ -1,37 +1,12 @@
 import sql from "../db/connection.ts";
+import { MODEL_MAP } from "../utils/models.ts";
+
+const BASE_DECIMAL_MULTIPLIER = 1000000;
 
 type TokenCount = {
     inputTokens: number;
     outputTokens: number;
 };
-
-type ModelRates = {
-    inputRate: number;
-    outputRate: number;
-};
-
-const MODEL_RATES: Record<string, ModelRates> = {
-    'claude-3-haiku': {
-        inputRate: 0.000250,  // Credits per 1K input tokens
-        outputRate: 0.001250  // Credits per 1K output tokens
-    },
-    'claude-3-5-sonnet': {
-        inputRate: 0.003000,
-        outputRate: 0.015000
-    },
-    'gpt-4o-mini': {
-        inputRate: 0.000150,
-        outputRate: 0.000600
-    },
-    'gpt-4o': {
-        inputRate: 0.002500,
-        outputRate: 0.010000
-    }
-};
-
-export function getModelRates(modelType: string): ModelRates {
-    return MODEL_RATES[modelType];
-}
 
 export async function getCreditsBalance(userId: number): Promise<number> {
     const result = await sql`SELECT credits_balance FROM users WHERE id = ${userId}`;
@@ -39,16 +14,16 @@ export async function getCreditsBalance(userId: number): Promise<number> {
 }
 
 export function calculateCredits(modelType: string, { inputTokens, outputTokens }: TokenCount): number {
-    const rates = getModelRates(modelType);
-    if (!rates) {
+    const model = MODEL_MAP[modelType];
+    if (!model) {
         throw new Error(`Unknown model type: ${modelType}`);
     }
 
-    const inputCost = (inputTokens / 1000) * rates.inputRate;
-    const outputCost = (outputTokens / 1000) * rates.outputRate;
+    const inputCost = (inputTokens / 1000) * model.rates.inputRate;
+    const outputCost = (outputTokens / 1000) * model.rates.outputRate;
     
     const totalCost = inputCost + outputCost;
-    const totalCostMultiplied = totalCost * 1000000;
+    const totalCostMultiplied = totalCost * BASE_DECIMAL_MULTIPLIER;
     
     return Math.ceil(totalCostMultiplied);
 }

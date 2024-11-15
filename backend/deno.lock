@@ -7,6 +7,7 @@
     "npm:cookie-parser@*": "1.4.7",
     "npm:eld@*": "1.0.0",
     "npm:express@4": "4.21.1",
+    "npm:gpt-tokenizer@*": "2.6.2",
     "npm:jsonwebtoken@*": "9.0.2",
     "npm:postgres@*": "3.4.5"
   },
@@ -362,6 +363,9 @@
       "dependencies": [
         "get-intrinsic"
       ]
+    },
+    "gpt-tokenizer@2.6.2": {
+      "integrity": "sha512-OznIET3z069FiwbLtLFXJ9pVESYAa8EnX0BMogs6YJ4Fn2FIcyeZYEbxsp2grPiK0DVaqP1f+0JR/8t9R7/jlg=="
     },
     "has-property-descriptors@1.0.2": {
       "integrity": "sha512-55JNKuIW+vq4Ke1BjOTjM2YctQIvCT7GFzHwmfZPGo5wnrgkid0YQtnAleFSqumZm4az3n2BS+erby5ipJdgrg==",

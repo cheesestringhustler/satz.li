@@ -1,103 +1,17 @@
-import { ChatOpenAI } from "npm:@langchain/openai";
-import { ChatAnthropic } from "npm:@langchain/anthropic";
 import { BaseChatModel } from "npm:@langchain/core/language_models/chat_models";
-import { 
-    ChatPromptTemplate,
-    SystemMessagePromptTemplate,
-    HumanMessagePromptTemplate 
-} from "npm:@langchain/core/prompts";
-import { StringOutputParser } from "npm:@langchain/core/output_parsers";
+import { AIMessageChunk } from "npm:@langchain/core/messages";
 import { Response } from "npm:express@4";
-import { config } from "../config/index.ts";
-import { logUsage, updateUsageLog } from "./usageService.ts";
-import { calculateCredits, deductCredits } from "./creditService.ts";
+
 import { AuthenticatedRequest } from "../types/express.ts";
+import { calculateCredits, deductCredits } from "./creditService.ts";
+import { logUsage, updateUsageLog } from "./usageService.ts"; 
+import { getTokenCount, getTokenCountFromMessageContent, getTokenEstimateOutputTokens } from "./tokenService.ts";
+import { MODEL_MAP } from "../utils/models.ts";
+import { PROMPTS } from "../utils/prompts.ts";
 
-type ModelConfig = {
-    class: typeof ChatAnthropic | typeof ChatOpenAI;
-    config: {
-        modelName: string;
-        anthropicApiKey?: string;
-        apiKey?: string;
-    };
-};
-
-const MODEL_MAP: Record<string, ModelConfig> = {
-    'claude-3-haiku': {
-        class: ChatAnthropic,
-        config: {
-            modelName: "claude-3-haiku-20240307",
-            anthropicApiKey: config.ai.anthropicApiKey,
-        }
-    },
-    'claude-3-5-sonnet': {
-        class: ChatAnthropic,
-        config: {
-            modelName: "claude-3-5-sonnet-20241022",
-            anthropicApiKey: config.ai.anthropicApiKey,
-        }
-    },
-    'gpt-4o-mini': {
-        class: ChatOpenAI,
-        config: {
-            modelName: "gpt-4o-mini",
-            apiKey: config.ai.openaiApiKey,
-        }
-    },
-    'gpt-4o': {
-        class: ChatOpenAI,
-        config: {
-            modelName: "gpt-4o",
-            apiKey: config.ai.openaiApiKey,
-        }
-    }
-};
-
-const createBasePrompt = (
-    systemMessage: string,
-    humanMessage: string = "Geben Sie nur den korrigierten Text zurück. Zu korrigierender Text:\n{text}",
-    customInstructionsMessage: string = "Befolgen Sie zusätzlich zu den obigen Anweisungen diese Anweisungen: {customPrompt}"
-) => ChatPromptTemplate.fromMessages([
-    SystemMessagePromptTemplate.fromTemplate(systemMessage),
-    HumanMessagePromptTemplate.fromTemplate(humanMessage),
-    HumanMessagePromptTemplate.fromTemplate(customInstructionsMessage)
-]);
-
-const PROMPTS = {
-    'de-ch': createBasePrompt(
-        `Sie sind ein Textassistent, der speziell für Schweizer Hochdeutsch optimiert ist. Sie verbessern, erstellen und verändern Texte des Benutzers.\n
-        Folgende Anweisungen müssen Sie befolgen, um den Text des Benutzers zu verbessern:\n
-        1. Grammatik und Syntax: Grundlegende Fehlerkorrektur, Grammatikvorschläge und strukturelle Änderungen zur Verbesserung der Lesbarkeit.\n
-        2. Schweizer Standarddeutsch: Verwendung der schweizerischen Schreibweise (ß -> ss, etc.) und Berücksichtigung schweizerischer Ausdrücke.
-        
-        Examples:
-        Email (Spezifikationen: Kein Komma nach Anrede, Kein Komma in Signatur):
-        "Guten Tag Herr Müller
-
-        Ich hoffe Sie hatten eine gute Woche und es geht Ihnen gut. Ich schreibe Ihnen wegen der Möglichkeit ein Termin nächste Woche zu vereinbaren. Wäre es Ihnen möglich am Dienstag oder Mittwoch Zeit zu finden damit wir unser Projekt besprechen können?
-
-        Falls keiner dieser Tage für Sie passt lassen Sie mich bitte wissen wann Sie verfügbar sind. Ich freue mich auf Ihre Rückmeldung.
-
-        Mit freundliche Grüsse
-        Max Mustermann"
-        `
-    ),
-    'de': createBasePrompt(
-        `Sie sind ein Textassistent, der Texte des Benutzers verbessert, erstellt und verändert.\n
-        Folgende Anweisungen müssen Sie befolgen, um den Text des Benutzers zu verbessern:\n
-        1. Grammatik und Syntax: Grundlegende Fehlerkorrektur, Grammatikvorschläge und strukturelle Änderungen zur Verbesserung der Lesbarkeit.`
-    ),
-    'en': createBasePrompt(
-        `You are a Text Assistant here to improve, generate and change text from the user.\n
-        Following are a set of instructions that you need to follow in order to improve the users text:\n
-        1. Grammar and Syntax: Basic error correction, grammar suggestions, and structural changes to improve readability.`,
-        "Please only return the corrected text. Text to correct:\n{text}",
-        "Additionally follow these instructions: {customPrompt}"
-    )
-};
 export async function optimizeText(
     text: string,
-    language: string,
+    languageCode: string,
     customPrompt: string,
     modelType: string,
     res: Response
@@ -115,21 +29,17 @@ export async function optimizeText(
             throw new Error(`Unknown model type: ${modelType}`);
         }
 
-        const model = new modelConfig.class(modelConfig.config) as BaseChatModel;
-        const prompt = PROMPTS[language as keyof typeof PROMPTS] || PROMPTS.en;
+        const model = new modelConfig.class(modelConfig.config) as unknown as BaseChatModel;
+        const prompt = PROMPTS[languageCode as keyof typeof PROMPTS] || PROMPTS.en;
+        
+        inputTokens = await getTokenCountFromMessageContent(modelConfig, { text, languageCode, customPrompt });
 
-        // Get token counts from the model
-        const messages = await prompt.formatMessages({ text, language, customPrompt });
-        const messageString = messages.map(m => `${m.getType()}: ${m.content}`).join('\n');
-        
-        inputTokens = await model.getNumTokens(messageString);
-        
         // CREDIT: Calculate initial credits estimate
         const estimatedCredits = calculateCredits(modelType, {
             inputTokens,
-            outputTokens: 0 // Initial estimate with 0 output tokens
+            outputTokens: await getTokenEstimateOutputTokens(modelConfig, text)
         });
-
+    
         // LOG: Create initial usage log
         usageLogId = await logUsage({
             userId,
@@ -142,25 +52,28 @@ export async function optimizeText(
         });
 
         // Process the request
-        const chain = prompt.pipe(model).pipe(new StringOutputParser());
-        const stream = await chain.stream({ text, language, customPrompt });
+        const chain = prompt.pipe(model);
+        const stream = await chain.stream({ text, languageCode, customPrompt });
 
         let fullResponse = '';
         res.header('Content-Type', 'text/plain');
         res.header('Transfer-Encoding', 'chunked');
 
         const response = res as Response & { write(chunk: string): boolean; };
+        const chunks: AIMessageChunk[] = [];
         for await (const chunk of stream) {
             if (chunk) {
-                fullResponse += chunk;
-                response.write(chunk);
+                chunks.push(chunk);
+                fullResponse += chunk.content;
+                response.write(chunk.content);
             }
         }
-        
-        // Get actual output tokens
-        outputTokens = await model.getNumTokens(fullResponse);
 
-        // CREDIT: Calculate actual credits used
+        // CREDIT: Get final output tokens with fallback
+        inputTokens = chunks[chunks.length - 1].usage_metadata?.input_tokens || inputTokens;
+        outputTokens = chunks[chunks.length - 1].usage_metadata?.output_tokens || await getTokenCount(modelConfig, fullResponse);
+
+        // CREDIT: Calculate actual credits used with accurate counts
         const actualCredits = calculateCredits(modelType, {
             inputTokens,
             outputTokens
@@ -172,9 +85,10 @@ export async function optimizeText(
             inputTokens,
             outputTokens,
             'completed',
-            Date.now() - startTime
+            Date.now() - startTime,
+            actualCredits
         );
-        
+
         // CREDIT: Deduct actual credits used
         await deductCredits(userId, actualCredits, usageLogId);
 
@@ -189,7 +103,7 @@ export async function optimizeText(
                 inputTokens,
                 outputTokens,
                 'failed',
-                Date.now() - startTime
+                Date.now() - startTime,
             );
         }
 
