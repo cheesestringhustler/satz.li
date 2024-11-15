@@ -22,9 +22,6 @@ export const getCreditsEstimateHandler = async (req: Request, res: Response) => 
     const inputTokens = await getTokenCountFromMessageContent(model, { text, languageCode, customPrompt });
     const outputTokens = await getTokenEstimateOutputTokens(model, text);
 
-    console.log('inputTokens', inputTokens);
-    console.log('outputTokens', outputTokens);
     const estimatedCredits = calculateCredits(modelType, { inputTokens, outputTokens });
-    console.log('estimatedCredits', estimatedCredits);
     res.json({ creditsEstimate: estimatedCredits });
 };

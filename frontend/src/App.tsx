@@ -7,7 +7,7 @@ import { useTheme } from "@/components/theme-provider"
 import { LoginDialog } from '@/containers/LoginDialog';
 import { VerifyAuth } from '@/containers/VerifyAuth';
 import { CreditsProvider } from '@/context/CreditsContext';
-
+import { Toaster } from '@/components/ui/toaster';
 function App() {
   const { theme } = useTheme()
 
@@ -40,6 +40,7 @@ function App() {
             } />
           </Routes>
         </div>
+        <Toaster />
       </ThemeProvider>
     </CreditsProvider>
   )

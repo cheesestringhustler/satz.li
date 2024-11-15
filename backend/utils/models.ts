@@ -2,7 +2,7 @@ import { ChatAnthropic } from "npm:@langchain/anthropic";
 import { ChatOpenAI } from "npm:@langchain/openai";
 import { config } from "../config/index.ts";
 
-export const OUTPUT_TOKENS_ESTIMATE_MULTIPLIER = 1.1;
+export const OUTPUT_TOKENS_ESTIMATE_MULTIPLIER = 1.25;
 
 export type ModelConfig = {
     class: typeof ChatAnthropic | typeof ChatOpenAI;

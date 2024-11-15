@@ -1,4 +1,3 @@
-
 // ################ Text ################
 const getAuthHeader = (): Record<string, string> => {
     const token = localStorage.getItem('accessToken');
@@ -16,6 +15,9 @@ export async function optimizeText(text: string, languageCode: string, customPro
     });
 
     if (!response.ok) {
+        if (response.status === 402) {
+            throw new Error('Insufficient credits');
+        }
         throw new Error('Network response was not ok');
     }
 

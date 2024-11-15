@@ -3,7 +3,7 @@ import { AIMessageChunk } from "npm:@langchain/core/messages";
 import { Response } from "npm:express@4";
 
 import { AuthenticatedRequest } from "../types/express.ts";
-import { calculateCredits, deductCredits } from "./creditService.ts";
+import { calculateCredits, deductCredits, getCreditsBalance } from "./creditService.ts";
 import { logUsage, updateUsageLog } from "./usageService.ts"; 
 import { getTokenCount, getTokenCountFromMessageContent, getTokenEstimateOutputTokens } from "./tokenService.ts";
 import { MODEL_MAP } from "../utils/models.ts";
@@ -34,12 +34,22 @@ export async function optimizeText(
         
         inputTokens = await getTokenCountFromMessageContent(modelConfig, { text, languageCode, customPrompt });
 
-        // CREDIT: Calculate initial credits estimate
+        // Get current credits balance
+        const currentBalance = await getCreditsBalance(userId);
+        
+        // Calculate estimated credits needed
         const estimatedCredits = calculateCredits(modelType, {
-            inputTokens,
+            inputTokens: await getTokenCountFromMessageContent(modelConfig, { text, languageCode, customPrompt }),
             outputTokens: await getTokenEstimateOutputTokens(modelConfig, text)
         });
-    
+
+        // Check if user has enough credits
+        if (currentBalance < estimatedCredits) {
+            return res.status(402).json({ 
+                error: 'Insufficient credits'
+            });
+        }
+        
         // LOG: Create initial usage log
         usageLogId = await logUsage({
             userId,

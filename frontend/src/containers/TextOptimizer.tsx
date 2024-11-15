@@ -4,6 +4,7 @@ import Delta from 'quill-delta';
 import { diff_match_patch } from 'diff-match-patch';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
 
 import CustomPromptInput from '@/containers/CustomPromptInput';
 import EditorControls from '@/containers/EditorControls';
@@ -37,6 +38,7 @@ function TextOptimizer() {
     const [customPrompt, setCustomPrompt] = useState('');
     const [pendingChanges, setPendingChanges] = useState<Delta>();
     const dmp = useRef(new diff_match_patch());
+    const { toast } = useToast();
 
     const {
         language,
@@ -170,8 +172,22 @@ function TextOptimizer() {
                 }
             }
         } catch (error) {
-            console.error('Error:', error);
-            quillRef.current.setText("An error occurred while optimizing the text.");
+            // Show toast for insufficient credits
+            if (error instanceof Error && error.message.includes('Insufficient credits')) {
+                toast({
+                    variant: "destructive",
+                    title: "Insufficient Credits",
+                    description: "You don't have enough credits to perform this optimization. Please purchase more credits to continue.",
+                });
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "An error occurred while optimizing the text.",
+                });
+            }
+            
+            quillRef.current.setText(originalText);
         } finally {
             setIsLoading(false);
         }
