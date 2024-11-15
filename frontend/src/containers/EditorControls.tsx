@@ -52,7 +52,7 @@ const EditorControls = ({
                     {isLoading ? "Optimizing..." : "Optimize"}
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                    Required credits: {requiredCredits}
+                    Required credits: ~{requiredCredits}
                 </span>
             </div>
             <div className='flex-1'></div>

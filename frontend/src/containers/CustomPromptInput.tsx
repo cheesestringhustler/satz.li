@@ -12,7 +12,8 @@ const CustomPromptInput = ({ customPrompt, setCustomPrompt, onOptimize }: Custom
         "Make it shorter",
         "Use simpler language",
         "Use passive voice",
-        "Improve flow"
+        "Improve flow",
+        "Make it more formal",
     ];
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
