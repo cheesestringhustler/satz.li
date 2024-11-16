@@ -1,13 +1,14 @@
-import { Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from "@/components/theme-provider"
-import { ModeToggle } from '@/components/mode-toggle';
-import TextOptimizer from '@/containers/TextOptimizer';
 import './App.css';
-import { useTheme } from "@/components/theme-provider"
-import { LoginDialog } from '@/containers/LoginDialog';
-import { VerifyAuth } from '@/containers/VerifyAuth';
-import { CreditsProvider } from '@/context/CreditsContext';
 import { Toaster } from '@/components/ui/toaster';
+import { ModeToggle } from '@/components/mode-toggle';
+import { ThemeProvider, useTheme } from "@/components/theme-provider";
+import { Routes, Route } from 'react-router-dom';
+import { CreditsProvider } from '@/context/CreditsContext';
+import { CreditsDialog } from '@/containers/CreditsDialog';
+import { LoginDialog } from '@/containers/LoginDialog';
+import TextOptimizer from '@/containers/TextOptimizer';
+import { VerifyAuth } from '@/containers/VerifyAuth';
+
 function App() {
   const { theme } = useTheme()
 
@@ -25,6 +26,7 @@ function App() {
                     <h1>satz.li</h1><span className="text-sm text-gray-500">&nbsp; - AI-Powered Text Assistance</span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <CreditsDialog />
                     <LoginDialog />
                     <ModeToggle />
                   </div>

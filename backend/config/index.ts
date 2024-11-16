@@ -30,5 +30,10 @@ export const config = {
     ai: {
         anthropicApiKey: env.ANTHROPIC_API_KEY,
         openaiApiKey: env.OPENAI_API_KEY
+    },
+    stripe: {
+        secretKey: env.STRIPE_SECRET_KEY,
+        webhookSecret: env.STRIPE_WEBHOOK_SECRET,
+        publicKey: env.STRIPE_PUBLIC_KEY
     }
 }; 
