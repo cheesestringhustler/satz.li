@@ -53,7 +53,7 @@ export async function deductCredits(userId: number, creditsUsed: number, referen
             ) VALUES (
                 ${userId},
                 ${-creditsUsed},
-                'usage',
+                'user_usage',
                 ${referenceId}
             )
         `;

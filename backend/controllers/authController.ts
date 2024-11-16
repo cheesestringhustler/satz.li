@@ -12,12 +12,13 @@ import { AuthenticatedRequest } from "../types/express.ts";
 
 export const requestMagicLink = async (req: Request, res: Response) => {
     const { email } = req.body;
+    const trimmedEmail = email.trim().toLowerCase();
     
-    if (!validateEmail(email)) {
+    if (!validateEmail(trimmedEmail)) {
         return res.status(400).json({ error: 'Invalid email address' });
     }
 
-    await sendMagicLink(email);
+    await sendMagicLink(trimmedEmail);
     res.json({ message: 'Magic link sent to email' });
 };
 
@@ -32,7 +33,7 @@ export const verifyMagicLink = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Magic link has expired or already been used' });
         }
 
-        const { user, accessToken } = await createUserSession(decoded.email, token as string);
+        const { user, accessToken } = await createUserSession(decoded.email.trim().toLowerCase(), token as string);
         
         res.cookie('accessToken', accessToken, config.cookie);
         res.json({ 

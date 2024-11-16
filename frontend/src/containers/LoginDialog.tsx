@@ -38,7 +38,7 @@ export function LoginDialog() {
     setError(null)
     
     try {
-      await requestMagicLink(email)
+      await requestMagicLink(email.trim())
       setStep("verify")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send magic link")
@@ -118,7 +118,7 @@ export function LoginDialog() {
               type="email"
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value.trim())}
               required
             />
             <Button type="submit">Send Magic Link</Button>
