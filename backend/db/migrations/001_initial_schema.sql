@@ -1,4 +1,7 @@
--- Enable UUID extension if needed
+-- Set search path at the beginning
+SET search_path TO app, public;
+
+-- Enable UUID extension in public schema
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 ------------------
@@ -6,7 +9,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ------------------
 
 -- Users table - core user information
-CREATE TABLE users (
+CREATE TABLE app.users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     credits_balance INTEGER DEFAULT 100,
@@ -15,9 +18,9 @@ CREATE TABLE users (
 );
 
 -- Authentication tables
-CREATE TABLE jwt_tokens (
+CREATE TABLE app.jwt_tokens (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES app.users(id) ON DELETE CASCADE,
     token VARCHAR(500) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -26,7 +29,7 @@ CREATE TABLE jwt_tokens (
     revocation_reason VARCHAR(255)
 );
 
-CREATE TABLE magic_link_tokens (
+CREATE TABLE app.magic_link_tokens (
     id SERIAL PRIMARY KEY,
     token VARCHAR(500) NOT NULL,
     email VARCHAR(255) NOT NULL,
@@ -42,9 +45,9 @@ CREATE TABLE magic_link_tokens (
 ------------------
 
 -- Track all API usage
-CREATE TABLE usage_logs (
+CREATE TABLE app.usage_logs (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    user_id INTEGER REFERENCES app.users(id) ON DELETE SET NULL,
     request_type VARCHAR(50) NOT NULL, -- 'optimization', 'language_detection', etc.
     model_type VARCHAR(50) NOT NULL,   -- 'gpt-4', 'gpt-3.5-turbo', etc.
     input_tokens INTEGER NOT NULL,
@@ -58,9 +61,9 @@ CREATE TABLE usage_logs (
 );
 
 -- Track credit changes
-CREATE TABLE credits_transactions (
+CREATE TABLE app.credits_transactions (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES app.users(id) ON DELETE CASCADE,
     amount INTEGER NOT NULL, -- positive for additions, negative for usage
     transaction_type VARCHAR(50) NOT NULL, -- 'purchase', 'usage', 'bonus', 'refund'
     reference_id INTEGER, -- can reference usage_logs.id or an external payment ID
@@ -74,33 +77,31 @@ CREATE TABLE credits_transactions (
 
 -- Authentication indices
 CREATE UNIQUE INDEX idx_unique_valid_token 
-ON jwt_tokens (user_id, token) 
+ON app.jwt_tokens (user_id, token) 
 WHERE NOT revoked;
 
-CREATE INDEX idx_jwt_tokens_user_id ON jwt_tokens(user_id);
-CREATE INDEX idx_jwt_tokens_token ON jwt_tokens(token);
-CREATE INDEX idx_magic_link_tokens_token ON magic_link_tokens(token);
-CREATE INDEX idx_magic_link_tokens_email ON magic_link_tokens(email);
+CREATE INDEX idx_jwt_tokens_user_id ON app.jwt_tokens(user_id);
+CREATE INDEX idx_jwt_tokens_token ON app.jwt_tokens(token);
+CREATE INDEX idx_magic_link_tokens_token ON app.magic_link_tokens(token);
+CREATE INDEX idx_magic_link_tokens_email ON app.magic_link_tokens(email);
 
 -- Usage indices
-CREATE INDEX idx_usage_logs_user_id ON usage_logs(user_id);
-CREATE INDEX idx_usage_logs_created_at ON usage_logs(created_at);
-CREATE INDEX idx_usage_logs_request_type ON usage_logs(request_type);
-CREATE INDEX idx_credits_transactions_user_id ON credits_transactions(user_id);
-CREATE INDEX idx_credits_transactions_created_at ON credits_transactions(created_at);
+CREATE INDEX idx_usage_logs_user_id ON app.usage_logs(user_id);
+CREATE INDEX idx_usage_logs_created_at ON app.usage_logs(created_at);
+CREATE INDEX idx_usage_logs_request_type ON app.usage_logs(request_type);
+CREATE INDEX idx_credits_transactions_user_id ON app.credits_transactions(user_id);
+CREATE INDEX idx_credits_transactions_created_at ON app.credits_transactions(created_at);
 
 ------------------
 -- Views --
 ------------------
 
--- Active tokens view
-CREATE VIEW active_tokens AS
-SELECT * FROM jwt_tokens 
+CREATE VIEW app.active_tokens AS
+SELECT * FROM app.jwt_tokens 
 WHERE NOT revoked 
 AND expires_at > CURRENT_TIMESTAMP;
 
--- User usage statistics
-CREATE VIEW user_usage_stats AS
+CREATE VIEW app.user_usage_stats AS
 SELECT 
     u.id as user_id,
     u.email,
@@ -111,12 +112,11 @@ SELECT
     SUM(l.credits_used) as total_credits_used,
     MAX(l.created_at) as last_request_at,
     COUNT(CASE WHEN l.created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours' THEN 1 END) as requests_last_24h
-FROM users u
-LEFT JOIN usage_logs l ON u.id = l.user_id
+FROM app.users u
+LEFT JOIN app.usage_logs l ON u.id = l.user_id
 GROUP BY u.id, u.email, u.credits_balance;
 
--- Monthly usage statistics
-CREATE VIEW monthly_usage_stats AS
+CREATE VIEW app.monthly_usage_stats AS
 SELECT 
     DATE_TRUNC('month', l.created_at) as month,
     u.email,
@@ -125,13 +125,12 @@ SELECT
     SUM(l.output_tokens) as total_output_tokens,
     SUM(l.credits_used) as total_credits_used,
     AVG(l.response_time) as avg_response_time
-FROM users u
-JOIN usage_logs l ON u.id = l.user_id
+FROM app.users u
+JOIN app.usage_logs l ON u.id = l.user_id
 GROUP BY DATE_TRUNC('month', l.created_at), u.id, u.email
 ORDER BY month DESC, total_credits_used DESC;
 
--- Daily usage statistics
-CREATE VIEW daily_usage_stats AS
+CREATE VIEW app.daily_usage_stats AS
 SELECT 
     DATE_TRUNC('day', l.created_at) as day,
     COUNT(*) as total_requests,
@@ -139,7 +138,7 @@ SELECT
     SUM(l.credits_used) as total_credits_used,
     AVG(l.response_time) as avg_response_time,
     SUM(CASE WHEN l.status != 'completed' THEN 1 ELSE 0 END) as error_count
-FROM usage_logs l
+FROM app.usage_logs l
 GROUP BY DATE_TRUNC('day', l.created_at)
 ORDER BY day DESC;
 
@@ -148,16 +147,16 @@ ORDER BY day DESC;
 ------------------
 
 -- Function to clean up expired tokens
-CREATE OR REPLACE FUNCTION cleanup_expired_tokens()
+CREATE OR REPLACE FUNCTION app.cleanup_expired_tokens()
 RETURNS void AS $$
 BEGIN
     -- Delete expired magic link tokens older than 24 hours
-    DELETE FROM magic_link_tokens 
+    DELETE FROM app.magic_link_tokens 
     WHERE (expires_at < CURRENT_TIMESTAMP AND created_at < CURRENT_TIMESTAMP - INTERVAL '24 hours')
     OR (used = true AND created_at < CURRENT_TIMESTAMP - INTERVAL '7 days');
 
     -- Mark expired JWT tokens as revoked
-    UPDATE jwt_tokens 
+    UPDATE app.jwt_tokens 
     SET revoked = true,
         revoked_at = CURRENT_TIMESTAMP,
         revocation_reason = 'expired'
@@ -167,9 +166,19 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function to get user credits balance
-CREATE OR REPLACE FUNCTION get_user_credits_balance(user_id_param INTEGER)
+CREATE OR REPLACE FUNCTION app.get_user_credits_balance(user_id_param INTEGER)
 RETURNS INTEGER AS $$
 BEGIN
-    RETURN (SELECT credits_balance FROM users WHERE id = user_id_param);
+    RETURN (SELECT credits_balance FROM app.users WHERE id = user_id_param);
 END;
-$$ LANGUAGE plpgsql; 
+$$ LANGUAGE plpgsql;
+
+-- Set default privileges for the new schema
+ALTER DEFAULT PRIVILEGES IN SCHEMA app
+    GRANT ALL PRIVILEGES ON TABLES TO CURRENT_USER;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA app
+    GRANT ALL PRIVILEGES ON SEQUENCES TO CURRENT_USER;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA app
+    GRANT ALL PRIVILEGES ON FUNCTIONS TO CURRENT_USER;

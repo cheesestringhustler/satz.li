@@ -1,34 +1,31 @@
-import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
-
-const env = await load();
-
 const maxJWTTokenAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 export const config = {
     jwt: {
-        secret: env.JWT_SECRET,
+        secret: Deno.env.get("JWT_SECRET"),
         maxAge: maxJWTTokenAge,
     },
     environment: {
-        isProduction: env.NODE_ENV === "production",
+        isProduction: Deno.env.get("ENV") === "production",
         port: 3000
     },
     cookie: {
         httpOnly: true,
-        secure: env.NODE_ENV === "production",
+        secure: Deno.env.get("ENV") === "production",
         sameSite: 'strict' as const,
         maxAge: maxJWTTokenAge,
         path: '/'
     },
     database: {
-        host: env.POSTGRES_HOST,
-        port: Number(env.POSTGRES_PORT),
-        database: env.POSTGRES_DB,
-        username: env.POSTGRES_USER,
-        password: env.POSTGRES_PASSWORD,
+        host: Deno.env.get("POSTGRES_HOST"),
+        port: Number(Deno.env.get("POSTGRES_PORT")),
+        database: Deno.env.get("POSTGRES_DB"),
+        username: Deno.env.get("POSTGRES_USER"),
+        password: Deno.env.get("POSTGRES_PASSWORD"),
+        searchPath: ['app', 'public'],
     },
     ai: {
-        anthropicApiKey: env.ANTHROPIC_API_KEY,
-        openaiApiKey: env.OPENAI_API_KEY
+        anthropicApiKey: Deno.env.get("ANTHROPIC_API_KEY"),
+        openaiApiKey: Deno.env.get("OPENAI_API_KEY")
     }
-}; 
+};

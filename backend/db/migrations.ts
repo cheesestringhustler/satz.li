@@ -2,17 +2,27 @@ import sql from './connection.ts';
 
 // Create migrations table if it doesn't exist
 async function createMigrationsTable() {
-    await sql`
-        CREATE TABLE IF NOT EXISTS migrations (
+    // Execute each statement separately
+    await sql.unsafe(`
+        CREATE SCHEMA IF NOT EXISTS app;
+    `);
+
+    await sql.unsafe(`
+        GRANT ALL PRIVILEGES ON SCHEMA app TO CURRENT_USER;
+        GRANT USAGE ON SCHEMA app TO CURRENT_USER;
+    `);
+    
+    await sql.unsafe(`
+        CREATE TABLE IF NOT EXISTS app.migrations (
             id SERIAL PRIMARY KEY,
             name VARCHAR(255) NOT NULL UNIQUE,
             executed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        )
-    `;
+        );
+    `);
 }
 
 async function getExecutedMigrations() {
-    return await sql`SELECT name FROM migrations ORDER BY id`;
+    return await sql`SELECT name FROM app.migrations ORDER BY id`;
 }
 
 export async function runMigrations() {
@@ -42,7 +52,7 @@ export async function runMigrations() {
                 
                 // Record the migration
                 await sql`
-                    INSERT INTO migrations (name)
+                    INSERT INTO app.migrations (name)
                     VALUES (${file.name})
                 `;
             });
