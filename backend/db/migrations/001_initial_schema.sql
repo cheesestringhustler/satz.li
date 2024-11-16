@@ -1,5 +1,5 @@
 -- Set search path at the beginning
-SET search_path TO app, public;
+SET search_path TO app;
 
 -- Enable UUID extension in public schema
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
