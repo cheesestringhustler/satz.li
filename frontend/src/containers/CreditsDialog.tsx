@@ -29,13 +29,25 @@ export function CreditsDialog() {
   const [error, setError] = useState<string | null>(null)
   const { credits } = useCredits()
 
-  const handlePurchase = async (amount: number) => {
+  const handlePurchase = async (amount: number, price: number) => {
     setError(null)
     try {
-      // TODO: Implement purchase logic
-      console.log(`Purchasing ${amount} credits`)
+      const response = await fetch('/api/payment/create-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ credits: amount, price }),
+      });
+      
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error('Failed to create payment session');
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to purchase credits")
+      setError(err instanceof Error ? err.message : "Failed to initiate purchase")
     }
   }
 
@@ -61,7 +73,7 @@ export function CreditsDialog() {
           {CREDIT_PACKAGES.map(pkg => (
             <Button 
               key={pkg.credits}
-              onClick={() => handlePurchase(pkg.credits)} 
+              onClick={() => handlePurchase(pkg.credits, pkg.price)} 
               className="w-full"
             >
               {pkg.credits} Credits - ${pkg.price}

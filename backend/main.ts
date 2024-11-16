@@ -5,17 +5,27 @@ import { runMigrations } from "./db/migrations.ts";
 import authRoutes from "./routes/authRoutes.ts";
 import textRoutes from "./routes/textRoutes.ts";
 import creditsRoutes from "./routes/creditsRoutes.ts";
+import paymentRoutes from "./routes/paymentRoutes.ts";
+import { handleStripeWebhookHandler } from "./controllers/paymentController.ts";
+
 const app = express();
 
-// Middleware
+// Stripe webhook needs raw body
+app.post('/api/webhook/stripe', 
+  express.raw({ type: 'application/json' }), 
+  handleStripeWebhookHandler
+);
+
+// Regular middleware for other routes
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static("dist")); // Serve static files from the 'dist' directory
+app.use(express.static("dist"));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', textRoutes);
 app.use('/api', creditsRoutes);
+app.use('/api', paymentRoutes);
 
 // Run migrations before starting the server
 await runMigrations();

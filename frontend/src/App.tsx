@@ -7,7 +7,9 @@ import { CreditsProvider } from '@/context/CreditsContext';
 import { CreditsDialog } from '@/containers/CreditsDialog';
 import { LoginDialog } from '@/containers/LoginDialog';
 import TextOptimizer from '@/containers/TextOptimizer';
-import { VerifyAuth } from '@/containers/VerifyAuth';
+import { VerifyAuth } from '@/pages/VerifyAuth';
+import PaymentSuccess from '@/pages/payment/success';
+import PaymentCancel from '@/pages/payment/cancel';
 
 function App() {
   const { theme } = useTheme()
@@ -40,6 +42,8 @@ function App() {
                 </footer>
               </>
             } />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/cancel" element={<PaymentCancel />} />
           </Routes>
         </div>
         <Toaster />

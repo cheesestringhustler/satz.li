@@ -11,7 +11,8 @@ export const config = {
     },
     environment: {
         isProduction: env.NODE_ENV === "production",
-        port: 3000
+        port: 3000,
+        frontendUrl: env.FRONTEND_URL
     },
     cookie: {
         httpOnly: true,

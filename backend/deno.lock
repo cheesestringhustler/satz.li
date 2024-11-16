@@ -4,12 +4,14 @@
     "npm:@langchain/anthropic@*": "0.3.5_@langchain+core@0.3.13__zod@3.23.8_zod@3.23.8",
     "npm:@langchain/core@*": "0.3.13_zod@3.23.8",
     "npm:@langchain/openai@*": "0.3.11_@langchain+core@0.3.13__zod@3.23.8_zod@3.23.8_openai@4.68.1__zod@3.23.8",
+    "npm:@types/node@*": "22.5.4",
     "npm:cookie-parser@*": "1.4.7",
     "npm:eld@*": "1.0.0",
     "npm:express@4": "4.21.1",
     "npm:gpt-tokenizer@*": "2.6.2",
     "npm:jsonwebtoken@*": "9.0.2",
-    "npm:postgres@*": "3.4.5"
+    "npm:postgres@*": "3.4.5",
+    "npm:stripe@*": "17.3.1"
   },
   "npm": {
     "@anthropic-ai/sdk@0.27.3": {
@@ -667,6 +669,13 @@
     },
     "statuses@2.0.1": {
       "integrity": "sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ=="
+    },
+    "stripe@17.3.1": {
+      "integrity": "sha512-E9/u+GFBPkYnTmfFCoKX3+gP4R3SkZoGunHe4cw9J+sqkj5uxpLFf1LscuI9BuEyIQ0PFAgPTHavgQwRtOvnag==",
+      "dependencies": [
+        "@types/node@22.5.4",
+        "qs"
+      ]
     },
     "strnum@1.0.5": {
       "integrity": "sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA=="
