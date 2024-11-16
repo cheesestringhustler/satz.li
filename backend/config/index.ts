@@ -7,7 +7,8 @@ export const config = {
     },
     environment: {
         isProduction: Deno.env.get("ENV") === "production",
-        port: 3000
+        port: 3000,
+        frontendUrl: Deno.env.get("FRONTEND_URL")
     },
     cookie: {
         httpOnly: true,
@@ -27,5 +28,14 @@ export const config = {
     ai: {
         anthropicApiKey: Deno.env.get("ANTHROPIC_API_KEY"),
         openaiApiKey: Deno.env.get("OPENAI_API_KEY")
+    },
+    stripe: {
+        secretKey: Deno.env.get("STRIPE_SECRET_KEY"),
+        webhookSecret: Deno.env.get("STRIPE_WEBHOOK_SECRET"), 
+        publicKey: Deno.env.get("STRIPE_PUBLIC_KEY")
+    },
+    brevo: {
+        apiKey: Deno.env.get("BREVO_API_KEY"),
+        fromEmail: Deno.env.get("BREVO_FROM_EMAIL")
     }
-};
+}; 

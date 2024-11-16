@@ -13,6 +13,7 @@ CREATE TABLE app.users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     credits_balance INTEGER DEFAULT 100,
+    stripe_customer_id VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP WITH TIME ZONE
 );
@@ -66,7 +67,7 @@ CREATE TABLE app.credits_transactions (
     user_id INTEGER REFERENCES app.users(id) ON DELETE CASCADE,
     amount INTEGER NOT NULL, -- positive for additions, negative for usage
     transaction_type VARCHAR(50) NOT NULL, -- 'purchase', 'usage', 'bonus', 'refund'
-    reference_id INTEGER, -- can reference usage_logs.id or an external payment ID
+    reference_id VARCHAR(255), -- can reference usage_logs.id or an external payment ID
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     notes TEXT
 );

@@ -1,6 +1,7 @@
 import jwt from "npm:jsonwebtoken";
 import sql from "../db/connection.ts";
 import { config } from "../config/index.ts";
+import { sendEmail, generateMagicLinkEmail } from "./emailService.ts";
 
 const DEFAULT_CREDITS_BALANCE = 500;
 
@@ -57,7 +58,7 @@ export async function sendMagicLink(email: string) {
     const token = jwt.sign(
         { email }, 
         config.jwt.secret, 
-        { expiresIn: config.jwt.maxAge / 1000 } // Convert to seconds for JWT
+        { expiresIn: config.jwt.maxAge / 1000 }
     );
     const expiresAt = new Date(Date.now() + config.jwt.maxAge);
     
@@ -67,9 +68,24 @@ export async function sendMagicLink(email: string) {
     `;
     
     const magicLink = `${config.environment.isProduction ? "https://satz.li" : "http://localhost:5173"}/a/verify?token=${token}`;
-    console.log(`Magic link for ${email}: ${magicLink}`);
     
-    return true;
+    const { subject, htmlContent } = generateMagicLinkEmail(email, magicLink);
+    
+    try {
+        if (config.environment.isProduction) {
+            await sendEmail({
+                to: email,
+                subject,
+                htmlContent,
+            });
+        } else {
+            console.log(`Magic link for ${email}: ${magicLink}`);
+        }
+        return true;
+    } catch (error) {
+        console.error('Failed to send magic link email:', error);
+        throw new Error('Failed to send magic link email');
+    }
 }
 
 export async function createUserSession(email: string, token: string) {

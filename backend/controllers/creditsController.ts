@@ -1,8 +1,8 @@
 import { Request, Response } from "npm:express@4";
 import { AuthenticatedRequest } from "../types/express.ts";
-import { MODEL_MAP, } from "../utils/models.ts";
 import { getCreditsBalance, calculateCredits } from "../services/creditService.ts";
 import { getTokenCountFromMessageContent, getTokenEstimateOutputTokens } from "../services/tokenService.ts";
+import { MODEL_MAP } from "../utils/models.ts";
 
 export const getCreditsBalanceHandler = async (req: Request, res: Response) => {
     const authenticatedReq = req as AuthenticatedRequest;
