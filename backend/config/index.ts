@@ -36,5 +36,9 @@ export const config = {
         secretKey: env.STRIPE_SECRET_KEY,
         webhookSecret: env.STRIPE_WEBHOOK_SECRET,
         publicKey: env.STRIPE_PUBLIC_KEY
+    },
+    brevo: {
+        apiKey: env.BREVO_API_KEY,
+        fromEmail: env.BREVO_FROM_EMAIL
     }
 }; 
