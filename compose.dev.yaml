@@ -65,7 +65,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -75,6 +75,29 @@ services:
       retries: 5
     networks:
       - satz-network
+
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?schema=umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl http://localhost:3000/api/heartbeat" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - satz-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.umami.rule=Host(`analytics.${DOMAIN}`)"
+      - "traefik.http.routers.umami.entrypoints=web"
+      - "traefik.http.services.umami.loadbalancer.server.port=3000"
 
 networks:
   satz-network:
