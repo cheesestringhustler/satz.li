@@ -1,7 +1,6 @@
 import sql from "../db/connection.ts";
 import { MODEL_MAP } from "../utils/models.ts";
-
-const BASE_DECIMAL_MULTIPLIER = 1000000;
+import { config } from "../config/index.ts";
 
 type TokenCount = {
     inputTokens: number;
@@ -23,7 +22,7 @@ export function calculateCredits(modelType: string, { inputTokens, outputTokens 
     const outputCost = (outputTokens / 1000) * model.rates.outputRate;
     
     const totalCost = inputCost + outputCost;
-    const totalCostMultiplied = totalCost * BASE_DECIMAL_MULTIPLIER;
+    const totalCostMultiplied = totalCost * config.credits.baseDecimalMultiplier;
     
     return Math.ceil(totalCostMultiplied);
 }

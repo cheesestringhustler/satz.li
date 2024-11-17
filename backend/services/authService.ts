@@ -3,8 +3,6 @@ import sql from "../db/connection.ts";
 import { config } from "../config/index.ts";
 import { sendEmail, generateMagicLinkEmail } from "./emailService.ts";
 
-const DEFAULT_CREDITS_BALANCE = 500;
-
 export async function createOrGetUser(email: string) {
     let user = await sql`
         SELECT id, email, credits_balance 
@@ -15,7 +13,7 @@ export async function createOrGetUser(email: string) {
     if (user.length === 0) {
         user = await sql`
             INSERT INTO users (email, credits_balance)
-            VALUES (${email}, ${DEFAULT_CREDITS_BALANCE})
+            VALUES (${email}, ${config.credits.defaultBalance})
             RETURNING id, email, credits_balance
         `;
     }

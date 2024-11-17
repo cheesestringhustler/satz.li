@@ -37,5 +37,9 @@ export const config = {
     brevo: {
         apiKey: Deno.env.get("BREVO_API_KEY") || "",
         fromEmail: Deno.env.get("BREVO_FROM_EMAIL") || ""
+    },
+    credits: {
+        defaultBalance: 500,
+        baseDecimalMultiplier: 1000000
     }
 }; 
