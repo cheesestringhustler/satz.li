@@ -5,7 +5,7 @@ import { defineConfig, loadEnv } from "vite"
 export default defineConfig(({ mode }) => {
   // Load env file based on mode
   const env = loadEnv(mode, process.cwd(), '')
-  
+
   return {
     plugins: [react()],
     resolve: {
@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     esbuild: {
-      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+      drop: env.ENV === 'production' ? ['console', 'debugger'] : [],
     },
   }
 })

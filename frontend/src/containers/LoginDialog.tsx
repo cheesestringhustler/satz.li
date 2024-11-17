@@ -29,6 +29,8 @@ export function LoginDialog() {
         refreshCredits()
         const savedEmail = localStorage.getItem('userEmail')
         if (savedEmail) setEmail(savedEmail)
+      } else {
+        localStorage.removeItem('userEmail')
       }
     })
   }, []);
