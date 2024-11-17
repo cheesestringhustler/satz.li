@@ -8,7 +8,7 @@ export const config = {
     environment: {
         isProduction: Deno.env.get("ENV") === "production",
         port: 3000,
-        frontendUrl: Deno.env.get("FRONTEND_URL") || ""
+        domain: Deno.env.get("DOMAIN") || ""
     },
     cookie: {
         httpOnly: true,

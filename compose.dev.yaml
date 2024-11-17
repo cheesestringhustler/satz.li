@@ -1,6 +1,22 @@
 name: satz-compose-dev
 
 services:
+  # Development service for Traefik (check /etc/hosts)
+  traefik:
+    image: traefik:v3.1
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--api.insecure=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080" # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - satz-network
+
   # Development service for frontend (optional, can still use npm run dev locally)
   frontend:
     build:
@@ -18,6 +34,11 @@ services:
       - backend
     networks:
       - satz-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`satz.localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
 
   # Development service for backend (optional, can still use deno run locally)
   backend:
@@ -61,3 +82,4 @@ networks:
 
 volumes:
   postgres_data:
+  letsencrypt:

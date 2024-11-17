@@ -67,8 +67,8 @@ export async function sendMagicLink(email: string) {
         VALUES (${token}, ${email}, ${expiresAt})
     `;
     
-    const magicLink = `${config.environment.isProduction ? "https://satz.li" : "http://localhost:5173"}/a/verify?token=${token}`;
-    
+    const magicLink = `${config.environment.isProduction ? "https" : "http"}://${config.environment.domain}/a/verify?token=${token}`;
+
     const { subject, htmlContent } = generateMagicLinkEmail(email, magicLink);
     
     try {
@@ -79,7 +79,7 @@ export async function sendMagicLink(email: string) {
                 htmlContent,
             });
         } else {
-            console.log(`Magic link for ${email}: ${magicLink}`);
+            console.log(`Magic link for ${email}:\n${magicLink}`);
         }
         return true;
     } catch (error) {

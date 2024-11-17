@@ -7,6 +7,8 @@ import textRoutes from "./routes/textRoutes.ts";
 import creditsRoutes from "./routes/creditsRoutes.ts";
 import paymentRoutes from "./routes/paymentRoutes.ts";
 import { handleStripeWebhookHandler } from "./controllers/paymentController.ts";
+import path from "npm:path";
+import { Request, Response } from "npm:express@4";
 
 const app = express();
 
@@ -26,6 +28,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api', textRoutes);
 app.use('/api', creditsRoutes);
 app.use('/api', paymentRoutes);
+
+// Handle React Router routes
+app.get('*', (_req: Request, res: Response) => {
+  res.sendFile(path.resolve('dist', 'index.html'));
+});
 
 // Run migrations before starting the server
 await runMigrations();

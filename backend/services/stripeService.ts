@@ -70,8 +70,8 @@ export async function createPaymentSession(
             },
         ],
         mode: 'payment',
-        success_url: `${config.environment.frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${config.environment.frontendUrl}/payment/cancel`,
+        success_url: `${config.environment.isProduction ? 'https' : 'http'}://${config.environment.domain}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${config.environment.isProduction ? 'https' : 'http'}://${config.environment.domain}/payment/cancel`,
         metadata: {
             userId: userId.toString(),
             credits: credits.toString(),

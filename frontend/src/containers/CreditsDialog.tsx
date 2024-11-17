@@ -60,11 +60,11 @@ export function CreditsDialog() {
         <DialogHeader>
           <DialogTitle>Purchase Credits</DialogTitle>
           <DialogDescription>
-            Choose a credit package to continue using our services.
-            {credits !== null && (
-              <div className="mt-2">Current balance: {credits} credits</div>
-            )}
+            Choose a credit package to continue using our services.<br />
           </DialogDescription>
+          {credits !== null && (
+            <p className="text-sm text-muted-foreground">Current balance: {credits} credits</p>
+          )}
         </DialogHeader>
         {error && (
           <div className="text-red-500 text-sm">{error}</div>

@@ -5,6 +5,9 @@ source .env
 
 echo "Starting deployment process..."
 
+# Create necessary directories on the server
+ssh -i $SSH_KEY_PATH -p $SSH_PORT root@$SERVER_IP "if [ ! -d $ROOT_PATH/letsencrypt ]; then mkdir -p $ROOT_PATH/letsencrypt; fi"
+
 echo "Building Docker image..."
 docker build --platform linux/arm64 -t satz.li:latest .
 
