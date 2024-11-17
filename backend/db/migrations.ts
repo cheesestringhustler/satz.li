@@ -2,7 +2,6 @@ import sql from './connection.ts';
 
 // Create migrations table if it doesn't exist
 async function createMigrationsTable() {
-    // Execute each statement separately
     await sql.unsafe(`
         CREATE SCHEMA IF NOT EXISTS app;
     `);
@@ -18,6 +17,10 @@ async function createMigrationsTable() {
             name VARCHAR(255) NOT NULL UNIQUE,
             executed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
+    `);
+
+    await sql.unsafe(`
+        SET search_path TO app, public;
     `);
 }
 

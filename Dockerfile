@@ -11,7 +11,7 @@ COPY frontend ./
 RUN npm run build
 
 # Use Deno image for backend and final image
-FROM denoland/deno:2.0.2 AS backend-builder
+FROM denoland/deno:2.0.6 AS backend-builder
 
 # Set up the backend
 WORKDIR /app/backend
@@ -22,13 +22,13 @@ RUN deno cache main.ts
 RUN deno compile --allow-net --allow-read --allow-env --output main main.ts
 
 # Start a new stage for the final image
-FROM denoland/deno:2.0.2
+FROM denoland/deno:2.0.6
 
 WORKDIR /app
 
 # Copy only the necessary artifacts from the builder stages
 COPY --from=backend-builder /app/backend/main ./
-COPY --from=backend-builder /app/backend/.env ./
+COPY --from=backend-builder /app/backend/db/migrations ./db/migrations
 COPY --from=frontend-builder /app/frontend/dist ./dist
 
 # Expose the port the app runs on
