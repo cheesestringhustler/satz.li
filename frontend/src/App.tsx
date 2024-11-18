@@ -23,7 +23,6 @@ function App() {
             <Route path="/" element={
               <>
                 <header className="w-full flex p-4 justify-between items-center">
-                  {/* <h1>txt<b><i>o</i></b></h1> */}
                   <div className="flex flex-row items-center">
                     <h1>satz.li</h1><span className="text-sm text-gray-500">&nbsp; - AI-Powered Text Assistance</span>
                   </div>
@@ -36,9 +35,10 @@ function App() {
                 <main className="container mx-auto px-4 py-6 w-full max-w-screen-lg flex-grow">
                   <TextOptimizer />
                 </main>
-                <footer className="container w-full mx-auto px-4 py-2 text-center text-xs text-gray-500 mt-auto">
-                  <p className="mb-2">This tool will help you optimize your text for better readability. It checks for spelling, grammar, and punctuation errors and suggests fixes.</p>
-                  <p className="mb-4">This site stores <a href="#" target="_blank" rel="noreferrer" className="underline">necessary data</a> for user management and analytics; text is sent to the OpenAI API, adhering to its <a href="https://openai.com/policies" target="_blank" rel="noopener noreferrer" className="underline">policies</a>.</p>
+                <footer className="container w-full mx-auto flex flex-col gap-2 px-4 py-2 text-center text-xs text-gray-500 mt-auto">
+                  <p className="mb-2">Welcome to our text optimization tool that helps improve your writing with enhanced readability. It checks for spelling, grammar, and punctuation errors and suggests fixes.</p>
+                  <p className="mb-2">As we're actively developing this service, features and functionality may change frequently while we improve the experience. Bugs are to be expected and can be reported at: <a href="https://airtable.com/app2pOTwziv6QG4p2/pag5rkh8ma3LTpvl5/form" target="_blank" rel="noreferrer" className="underline">https://airtable.com/app2pOTwziv6QG4p2/pag5rkh8ma3LTpvl5/form</a></p>
+                  <p className="mb-4">For transparency, we store <a href="#wip" target="_blank" rel="noreferrer" className="underline">necessary data</a> for user management, functionality, and analytics; text is sent to the OpenAI API, adhering to its <a href="https://openai.com/policies" target="_blank" rel="noopener noreferrer" className="underline">policies</a>.</p>
                 </footer>
               </>
             } />
