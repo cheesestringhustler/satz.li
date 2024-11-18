@@ -56,9 +56,9 @@ export async function sendMagicLink(email: string) {
     const token = jwt.sign(
         { email }, 
         config.jwt.secret, 
-        { expiresIn: config.jwt.maxAge / 1000 }
+        { expiresIn: config.jwt.magicLinkMaxAge / 1000 }
     );
-    const expiresAt = new Date(Date.now() + config.jwt.maxAge);
+    const expiresAt = new Date(Date.now() + config.jwt.magicLinkMaxAge);
     
     await sql`
         INSERT INTO magic_link_tokens (token, email, expires_at)

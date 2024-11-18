@@ -1,9 +1,11 @@
 const maxJWTTokenAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+const maxMagicLinkTokenAge = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 export const config = {
     jwt: {
         secret: Deno.env.get("JWT_SECRET") || "",
         maxAge: maxJWTTokenAge,
+        magicLinkMaxAge: maxMagicLinkTokenAge
     },
     environment: {
         isProduction: Deno.env.get("ENV") === "production",
