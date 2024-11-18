@@ -17,8 +17,11 @@ export async function optimizeText(text: string, languageCode: string, customPro
     if (!response.ok) {
         if (response.status === 402) {
             throw new Error('Insufficient credits');
+        } else if (response.status === 401) {
+            throw new Error('Unauthorized');
+        } else {
+            throw new Error('Network response was not ok');
         }
-        throw new Error('Network response was not ok');
     }
 
     const reader = response.body?.getReader();

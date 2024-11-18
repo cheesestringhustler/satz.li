@@ -59,22 +59,26 @@ const EditorControls = ({
                     {requiredCredits > 0 ? `Required credits: ~${requiredCredits}` : ''}
                 </span>
             </div>
-            <div className='flex-1'></div>
-            <div className='flex flex-nowrap gap-2'>          
-                <Button onClick={onApplyChanges} disabled={!isOptimizationComplete}>
-                    Apply All
-                </Button>
-                <Button onClick={onRevertChanges} disabled={!isOptimizationComplete}>
-                    Revert
-                </Button>
-            </div>
-            <div className='flex flex-nowrap gap-2'>
-                <Button onClick={onCopy}>
-                    Copy
-                </Button>
-                <Button onClick={onPaste}>
-                    Paste
-                </Button>
+            <div className='flex flex-col gap-1 w-full'>
+                <span className='text-xs text-muted-foreground'>Changes:</span>
+                <div className='flex flex-nowrap gap-2'>        
+                    <Button onClick={onApplyChanges} disabled={!isOptimizationComplete}>
+                        Apply
+                    </Button>
+                    <Button onClick={onRevertChanges} disabled={!isOptimizationComplete}>
+                        Revert
+                    </Button>
+                </div>
+
+                <span className='mt-2 text-xs text-muted-foreground'>Clipboard:</span>
+                <div className='flex flex-nowrap gap-2'>
+                    <Button onClick={onCopy}>
+                        Copy
+                    </Button>
+                    <Button onClick={onPaste}>
+                        Paste
+                    </Button>
+                </div>
             </div>
         </div>
     );

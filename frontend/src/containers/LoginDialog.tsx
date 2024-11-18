@@ -90,6 +90,7 @@ export function LoginDialog() {
           onMouseEnter={() => setShowLogout(true)}
           onMouseLeave={() => setShowLogout(false)}
           onClick={handleLogout}
+          className="w-[100px]"
         >
           {showLogout ? "Logout" : email.slice(0, 6) + "..." + email.slice(-4)}
         </Button>

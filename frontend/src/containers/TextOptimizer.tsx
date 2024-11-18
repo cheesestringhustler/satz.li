@@ -179,6 +179,12 @@ function TextOptimizer() {
                     title: "Insufficient Credits",
                     description: "You don't have enough credits to perform this optimization. Please purchase more credits to continue.",
                 });
+            } else if (error instanceof Error && error.message.includes('Unauthorized')) {
+                toast({
+                    variant: "destructive",
+                    title: "Sign in required",
+                    description: "Please sign in to continue.",
+                });
             } else {
                 toast({
                     variant: "destructive",
