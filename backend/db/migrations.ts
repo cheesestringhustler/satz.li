@@ -18,10 +18,6 @@ async function createMigrationsTable() {
             executed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
     `);
-
-    await sql.unsafe(`
-        SET search_path TO app, public;
-    `);
 }
 
 async function getExecutedMigrations() {

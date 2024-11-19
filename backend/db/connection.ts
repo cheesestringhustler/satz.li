@@ -7,6 +7,9 @@ const sql = postgres({
     database: config.database.database,
     username: config.database.username,
     password: config.database.password,
+    connection: {
+        search_path: 'app',
+    },
 });
 
 export default sql; 

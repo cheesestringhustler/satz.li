@@ -1,7 +1,7 @@
 import jwt from "npm:jsonwebtoken";
 import sql from "../db/connection.ts";
 import { config } from "../config/index.ts";
-import { sendEmail, generateMagicLinkEmail } from "./emailService.ts";
+import { generateMagicLinkEmail, sendEmail } from "./emailService.ts";
 
 export async function createOrGetUser(email: string) {
     let user = await sql`
@@ -54,21 +54,23 @@ export async function validateMagicLinkToken(token: string): Promise<boolean> {
 
 export async function sendMagicLink(email: string) {
     const token = jwt.sign(
-        { email }, 
-        config.jwt.secret, 
-        { expiresIn: config.jwt.magicLinkMaxAge / 1000 }
+        { email },
+        config.jwt.secret,
+        { expiresIn: config.jwt.magicLinkMaxAge / 1000 },
     );
     const expiresAt = new Date(Date.now() + config.jwt.magicLinkMaxAge);
-    
+
     await sql`
         INSERT INTO magic_link_tokens (token, email, expires_at)
         VALUES (${token}, ${email}, ${expiresAt})
     `;
-    
-    const magicLink = `${config.environment.isProduction ? "https" : "http"}://${config.environment.domain}/a/verify?token=${token}`;
+
+    const magicLink = `${
+        config.environment.isProduction ? "https" : "http"
+    }://${config.environment.domain}/a/verify?token=${token}`;
 
     const { subject, htmlContent } = generateMagicLinkEmail(email, magicLink);
-    
+
     try {
         if (config.environment.isProduction) {
             await sendEmail({
@@ -81,8 +83,8 @@ export async function sendMagicLink(email: string) {
         }
         return true;
     } catch (error) {
-        console.error('Failed to send magic link email:', error);
-        throw new Error('Failed to send magic link email');
+        console.error("Failed to send magic link email:", error);
+        throw new Error("Failed to send magic link email");
     }
 }
 
@@ -92,18 +94,18 @@ export async function createUserSession(email: string, token: string) {
         SET used = true
         WHERE token = ${token}
     `;
-    
+
     const user = await createOrGetUser(email);
-    
+
     const accessToken = jwt.sign(
-        { 
+        {
             userId: user.id,
-            email: user.email 
-        }, 
-        config.jwt.secret, 
-        { expiresIn: config.jwt.maxAge / 1000 } // Convert to seconds for JWT
+            email: user.email,
+        },
+        config.jwt.secret,
+        { expiresIn: config.jwt.maxAge / 1000 }, // Convert to seconds for JWT
     );
-    
+
     const expiresAt = new Date(Date.now() + config.jwt.maxAge);
     await storeJWTToken(user.id, accessToken, expiresAt);
 
@@ -121,11 +123,11 @@ export async function refreshToken(userId: number, email: string) {
     const newAccessToken = jwt.sign(
         { userId, email },
         config.jwt.secret,
-        { expiresIn: config.jwt.maxAge / 1000 } // Convert to seconds for JWT
+        { expiresIn: config.jwt.maxAge / 1000 }, // Convert to seconds for JWT
     );
-    
+
     const expiresAt = new Date(Date.now() + config.jwt.maxAge);
     await storeJWTToken(userId, newAccessToken, expiresAt);
-    
+
     return newAccessToken;
-} 
+}

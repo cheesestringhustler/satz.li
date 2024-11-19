@@ -56,10 +56,10 @@ function TextOptimizer() {
     useEffect(() => {
         if (editorRef.current && !quillRef.current) {
             quillRef.current = new Quill(editorRef.current, QUILL_OPTIONS);
-            
+
             // Set default text
             quillRef.current.setText(textState.text);
-            
+
             // Handle text changes
             quillRef.current.on('text-change', (_delta, _oldDelta, source) => {
                 if (source === 'user') {
@@ -85,7 +85,7 @@ function TextOptimizer() {
         if (quillRef.current && pendingChanges) {
             // Save current selection
             const selection = quillRef.current.getSelection();
-            
+
             // Apply the changes
             quillRef.current.updateContents(pendingChanges);
 
@@ -192,7 +192,7 @@ function TextOptimizer() {
                     description: "An error occurred while optimizing the text.",
                 });
             }
-            
+
             quillRef.current.setText(originalText);
         } finally {
             setIsLoading(false);
@@ -280,7 +280,7 @@ function TextOptimizer() {
                         onOptimize={() => handleOptimize(language, customPrompt)}
                     />
                     <div className="flex flex-col gap-2">
-                        <div 
+                        <div
                             ref={editorRef}
                             className="border rounded-md min-h-[384px] max-h-[80vh]"
                         />
