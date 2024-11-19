@@ -60,6 +60,18 @@ services:
       - "traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true"
       - "traefik.http.middlewares.security-headers.headers.stsPreload=true"
       - "traefik.http.routers.web.middlewares=security-headers@docker"
+      # Additional router for redirect (HTTP and HTTPS)
+      - "traefik.http.routers.txo-redirect-secure.rule=Host(`txo.artificial.li`)"
+      - "traefik.http.routers.txo-redirect-secure.entrypoints=websecure"
+      - "traefik.http.routers.txo-redirect-secure.tls=true"
+      - "traefik.http.routers.txo-redirect-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.middlewares.txo-redirect.redirectregex.regex=^https?://txo.artificial.li/(.*)"
+      - "traefik.http.middlewares.txo-redirect.redirectregex.replacement=https://${DOMAIN}/$${1}"
+      - "traefik.http.routers.txo-redirect-secure.middlewares=txo-redirect@docker"
+      # HTTP router (will catch non-HTTPS traffic)
+      - "traefik.http.routers.txo-redirect-insecure.rule=Host(`txo.artificial.li`)"
+      - "traefik.http.routers.txo-redirect-insecure.entrypoints=web"
+      - "traefik.http.routers.txo-redirect-insecure.middlewares=txo-redirect@docker"
 
   db:
     image: postgres:17.1-alpine
