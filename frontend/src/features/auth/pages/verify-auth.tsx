@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { verifyMagicLink } from '@/services/api';
+import { verifyMagicLink } from '@/features/auth/services';
 
 export function VerifyAuth() {
     const [searchParams] = useSearchParams();

@@ -6,14 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 
-import CustomPromptInput from '@/containers/CustomPromptInput';
-import EditorControls from '@/containers/EditorControls';
-import { LanguageSelector } from '@/containers/LanguageSelector';
-import ModelSelector from '@/containers/ModelSelector';
-import { useLanguageDetection } from '@/hooks/useLanguageDetection';
-import { useTextState } from '@/hooks/useTextState';
-import { optimizeText } from '@/services/api';
-import { useCredits } from '@/context/CreditsContext';
+import CustomPromptInput from '@/features/editor/components/custom-prompt-input';
+import EditorControls from '@/features/editor/components/editor-controls';
+import { LanguageSelector } from '@/features/editor/components/language-selector';
+import ModelSelector from '@/features/editor/components/model-selector';
+import { useLanguageDetection } from '@/features/editor/hooks/use-language-detection';
+import { useTextState } from '@/features/editor/hooks/use-text-state';
+import { optimizeText } from '@/features/editor/services';
+import { useCredits } from '@/context/credits-context';
 
 // Define Quill options
 const QUILL_OPTIONS = {

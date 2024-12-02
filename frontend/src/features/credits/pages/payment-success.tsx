@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useCredits } from '@/context/CreditsContext';
+import { useCredits } from '@/context/credits-context';
 import { toast } from '@/hooks/use-toast';
 
 export default function PaymentSuccess() {

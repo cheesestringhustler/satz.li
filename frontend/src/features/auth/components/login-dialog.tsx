@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react"
+import { useCredits } from '@/context/credits-context';
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -8,9 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { useState, useEffect } from "react"
-import { requestMagicLink, verifyMagicLink, logout, checkAuthStatus } from "@/services/api"
-import { useCredits } from '@/context/CreditsContext';
+import { checkAuthStatus, logout, requestMagicLink, verifyMagicLink } from "@/features/auth/services"
 
 export function LoginDialog() {
   const [email, setEmail] = useState("")

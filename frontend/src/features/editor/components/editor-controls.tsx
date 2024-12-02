@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { getCreditsEstimate } from '@/services/api';
+import { getCreditsEstimate } from '@/features/credits/services';
 import { useEffect, useState, useMemo } from 'react';
 import debounce from 'lodash/debounce';
 

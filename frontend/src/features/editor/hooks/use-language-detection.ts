@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { debounce } from 'lodash';
-import { detectLanguage } from '@/services/api';
+import { detectLanguage } from '@/features/editor/services';
 
 interface UseLanguageDetectionProps {
     initialAutoDetect?: boolean;

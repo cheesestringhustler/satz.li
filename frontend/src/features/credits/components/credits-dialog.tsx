@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 // import { useState } from "react"
-import { useCredits } from '@/context/CreditsContext'
+import { useCredits } from '@/context/credits-context'
 
 // const CREDIT_PACKAGES = [
 //   {
