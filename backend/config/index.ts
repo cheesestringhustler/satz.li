@@ -42,6 +42,12 @@ export const config = {
     },
     credits: {
         defaultBalance: 1000,
-        baseDecimalMultiplier: 1000000
+        baseDecimalMultiplier: 1000000,
+    },
+    requestLimits: {
+        defaultRequestBalance: 500,
+        defaultMaxTextChars: 4000,
+        defaultMaxContextChars: 6000,
+        defaultRequestCost: 1,
     }
 }; 
