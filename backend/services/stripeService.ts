@@ -7,7 +7,7 @@ const stripe = new Stripe(config.stripe.secretKey);
 export async function createPaymentSession(
     userId: number,
     email: string,
-    credits: number,
+    amount: number,
     price: number
 ) {
     // First check if user exists
@@ -61,7 +61,7 @@ export async function createPaymentSession(
                 price_data: {
                     currency: 'usd',
                     product_data: {
-                        name: `${credits} Credits`,
+                        name: `${amount} Credits`,
                         description: 'Credits for AI text optimization',
                     },
                     unit_amount: price * 100, // Convert to cents
@@ -74,7 +74,7 @@ export async function createPaymentSession(
         cancel_url: `${config.environment.isProduction ? 'https' : 'http'}://${config.environment.domain}/payment/cancel`,
         metadata: {
             userId: userId.toString(),
-            credits: credits.toString(),
+            amount: amount.toString()
         },
     });
 
@@ -98,17 +98,17 @@ export async function handleStripeWebhookEvent(
             case 'checkout.session.completed': {
                 const session = event.data.object as Stripe.Checkout.Session;
                 const userId = Number(session.metadata?.userId);
-                const credits = Number(session.metadata?.credits);
+                const amount = Number(session.metadata?.amount);
                 const paymentIntentId = session.payment_intent as string;
 
-                if (!userId || !credits) {
-                    throw new Error('Missing userId or credits in session metadata');
+                if (!userId || !amount) {
+                    throw new Error('Missing userId or amount in session metadata');
                 }
 
                 // Add credits to user's balance
                 await sql`
                     UPDATE users 
-                    SET credits_balance = credits_balance + ${credits}
+                    SET credits_balance = credits_balance + ${amount}
                     WHERE id = ${userId}
                 `;
 
@@ -122,12 +122,17 @@ export async function handleStripeWebhookEvent(
                         notes
                     ) VALUES (
                         ${userId},
-                        ${credits},
-                        'purchase',
+                        ${amount},
+                        'purchase_credits',
                         ${paymentIntentId},
                         'Stripe payment'
                     )
                 `;
+
+                if (!config.environment.isProduction) {
+                    console.log(`Stripe webhook event: ${event.type}`);
+                }
+
                 break;
             }
             default:

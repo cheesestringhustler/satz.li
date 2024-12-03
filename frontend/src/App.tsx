@@ -10,14 +10,14 @@ function App() {
     const routeElements = useRoutes(routes);
 
     return (
-        <CreditsProvider>
+          <CreditsProvider>
             <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
                 <div className={`${theme} min-h-screen flex flex-col`}>
                     {routeElements}
                 </div>
                 <Toaster />
             </ThemeProvider>
-        </CreditsProvider>
+          </CreditsProvider>
     )
 }
 

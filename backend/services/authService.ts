@@ -13,7 +13,7 @@ export async function createOrGetUser(email: string) {
     if (user.length === 0) {
         user = await sql`
             INSERT INTO users (email, credits_balance)
-            VALUES (${email}, ${config.credits.defaultBalance})
+            VALUES (${email}, ${config.requestLimits.newUserRequestsBalance})
             RETURNING id, email, credits_balance
         `;
     }

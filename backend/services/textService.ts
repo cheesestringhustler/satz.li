@@ -3,11 +3,16 @@ import { AIMessageChunk } from "npm:@langchain/core/messages";
 import { Response } from "npm:express@4";
 
 import { AuthenticatedRequest } from "../types/express.ts";
-import { calculateCredits, deductCredits, getCreditsBalance } from "./creditService.ts";
-import { logUsage, updateUsageLog } from "./usageService.ts"; 
-import { getTokenCount, getTokenCountFromMessageContent, getTokenEstimateOutputTokens } from "./tokenService.ts";
+import { getTokenCount, getTokenCountFromMessageContent } from "./tokenService.ts";
 import { MODEL_MAP } from "../utils/models.ts";
 import { PROMPTS } from "../utils/prompts.ts";
+
+export interface OptimizationResult {
+    text: string;
+    inputTokens: number;
+    outputTokens: number;
+    responseTime: number;
+}
 
 export async function optimizeText(
     text: string,
@@ -15,11 +20,10 @@ export async function optimizeText(
     customPrompt: string,
     modelType: string,
     res: Response
-) {
+): Promise<OptimizationResult | null> {
     const startTime = Date.now();
     const req = res.req as AuthenticatedRequest;
     const userId = req.user.id;
-    let usageLogId: number | undefined;
     let inputTokens: number = 0;
     let outputTokens: number = 0;
 
@@ -33,33 +37,6 @@ export async function optimizeText(
         const prompt = PROMPTS[languageCode as keyof typeof PROMPTS] || PROMPTS.en;
         
         inputTokens = await getTokenCountFromMessageContent(modelConfig, { text, languageCode, customPrompt });
-
-        // Get current credits balance
-        const currentBalance = await getCreditsBalance(userId);
-        
-        // Calculate estimated credits needed
-        const estimatedCredits = calculateCredits(modelType, {
-            inputTokens: await getTokenCountFromMessageContent(modelConfig, { text, languageCode, customPrompt }),
-            outputTokens: await getTokenEstimateOutputTokens(modelConfig, text)
-        });
-
-        // Check if user has enough credits
-        if (currentBalance < estimatedCredits) {
-            return res.status(402).json({ 
-                error: 'Insufficient credits'
-            });
-        }
-        
-        // LOG: Create initial usage log
-        usageLogId = await logUsage({
-            userId,
-            requestType: 'optimization',
-            modelType,
-            inputTokens,
-            outputTokens: 0,
-            creditsUsed: estimatedCredits,
-            status: 'processing'
-        });
 
         // Process the request
         const chain = prompt.pipe(model);
@@ -79,47 +56,24 @@ export async function optimizeText(
             }
         }
 
-        // CREDIT: Get final output tokens with fallback
+        // Get final token counts with fallback
         inputTokens = chunks[chunks.length - 1].usage_metadata?.input_tokens || inputTokens;
         outputTokens = chunks[chunks.length - 1].usage_metadata?.output_tokens || await getTokenCount(modelConfig, fullResponse);
 
-        // CREDIT: Calculate actual credits used with accurate counts
-        const actualCredits = calculateCredits(modelType, {
-            inputTokens,
-            outputTokens
-        });
-        
-        // LOG: Update usage log with actual values
-        await updateUsageLog(
-            usageLogId,
+        response.end();
+
+        return {
+            text: fullResponse,
             inputTokens,
             outputTokens,
-            'completed',
-            Date.now() - startTime,
-            actualCredits
-        );
-
-        // CREDIT: Deduct actual credits used
-        await deductCredits(userId, actualCredits, usageLogId);
-
-        response.end();
+            responseTime: Date.now() - startTime
+        };
     } catch (error) {
         console.error('Error:', error);
-        
-        // LOG: Update usage log if it was created
-        if (usageLogId) {
-            await updateUsageLog(
-                usageLogId,
-                inputTokens,
-                outputTokens,
-                'failed',
-                Date.now() - startTime,
-            );
-        }
-
         res.status(500).json({ 
             error: 'An error occurred while processing your request.',
             details: error instanceof Error ? error.message : 'Unknown error'
         });
+        return null;
     }
 } 

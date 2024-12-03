@@ -172,12 +172,12 @@ function TextOptimizer() {
                 }
             }
         } catch (error) {
-            // Show toast for insufficient credits
+            // Show toast for insufficient requests
             if (error instanceof Error && error.message.includes('Insufficient credits')) {
                 toast({
                     variant: "destructive",
-                    title: "Insufficient Credits",
-                    description: "You don't have enough credits to perform this optimization. Please purchase more credits to continue.",
+                    title: "Insufficient Requests",
+                    description: "You don't have enough requests to perform this optimization. Please purchase more requests to continue.",
                 });
             } else if (error instanceof Error && error.message.includes('Unauthorized')) {
                 toast({

@@ -33,16 +33,21 @@ export const verifyPaymentSession = async (req: Request, res: Response) => {
     }
 };
 
-export const createPaymentSessionHandler = async (req: Request, res: Response) => {
+export const createCreditsPaymentSessionHandler = async (req: Request, res: Response) => {
     const authenticatedReq = req as AuthenticatedRequest;
-    const { credits, price } = req.body;
+    const { amount, price } = req.body;
+    
+    // Validate request parameters
+    if (!amount || !price || amount !== config.credits.tier1Credits || price !== config.credits.tier1Price) { // TODO: Make dynamic and check for valid values for package
+        return res.status(400).json({ error: "Invalid request package" });
+    }
     
     try {
         const session = await createPaymentSession(
             authenticatedReq.user.id,
             authenticatedReq.user.email,
-            credits,
-            price
+            amount,
+            price,
         );
         res.json({ sessionId: session.id, url: session.url });
     } catch (err) {
