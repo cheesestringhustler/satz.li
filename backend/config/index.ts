@@ -41,6 +41,8 @@ export const config = {
         fromEmail: Deno.env.get("BREVO_FROM_EMAIL") || ""
     },
     credits: {
+        tier1Credits: 250,
+        tier1Price: 5,
         defaultBalance: 1000,
         baseDecimalMultiplier: 1000000,
     },

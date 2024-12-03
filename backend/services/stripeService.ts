@@ -114,7 +114,7 @@ export async function handleStripeWebhookEvent(
 
                 // Log the transaction with payment intent ID
                 await sql`
-                    INSERT INTO requests_transactions (
+                    INSERT INTO credits_transactions (
                         user_id,
                         amount,
                         transaction_type,
@@ -123,7 +123,7 @@ export async function handleStripeWebhookEvent(
                     ) VALUES (
                         ${userId},
                         ${amount},
-                        'purchase_requests',
+                        'purchase_credits',
                         ${paymentIntentId},
                         'Stripe payment'
                     )

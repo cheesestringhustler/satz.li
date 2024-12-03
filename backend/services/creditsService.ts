@@ -1,3 +1,4 @@
+import { config } from "../config/index.ts";
 import sql from "../db/connection.ts";
 
 export async function getCreditsBalance(userId: number): Promise<number> {
@@ -8,15 +9,14 @@ export async function getCreditsBalance(userId: number): Promise<number> {
 export async function checkCreditsAvailability(userId: number, text: string): Promise<boolean> {
     // Get user's current request balance
     const creditsBalance = await getCreditsBalance(userId);
-    
+
     // Check if user has any requests available
     if (creditsBalance <= 0) {
         return false;
     }
 
     // Check text length (assuming there's a character limit)
-    const charLimit = 4000; // This should match the frontend REQUEST_PACKAGE.charLimit
-    if (text.length > charLimit) {
+    if (text.length > config.requestLimits.defaultMaxTextChars) {
         return false;
     }
 
@@ -28,7 +28,7 @@ export async function deductCredits(userId: number, referenceId: string): Promis
         // Deduct request from user balance
         const result = await sql`
             UPDATE users 
-            SET credits_balance = credits_balance - 1
+            SET credits_balance = credits_balance - ${config.requestLimits.defaultRequestCost}
             WHERE id = ${userId}
             AND credits_balance > 0
             RETURNING credits_balance
@@ -48,7 +48,7 @@ export async function deductCredits(userId: number, referenceId: string): Promis
                 notes
             ) VALUES (
                 ${userId},
-                ${-1},
+                ${-config.requestLimits.defaultRequestCost},
                 'user_usage',
                 ${referenceId},
                 'Text optimization'

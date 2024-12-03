@@ -11,9 +11,10 @@ import { useState } from "react"
 import { useCredits } from '@/context/credits-context'
 
 const CREDITS_PACKAGE = {
-  credits: 500,
+  credits: 250,
   price: 5,
-  charLimit: 4000
+  charLimitText: 4000,
+  charLimitContext: 6000
 } as const;
 
 export function RequestsDialog() {
