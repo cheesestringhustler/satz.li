@@ -8,29 +8,29 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useState } from "react"
-import { useRequests } from '@/context/requests-context'
+import { useCredits } from '@/context/credits-context'
 
-const REQUEST_PACKAGE = {
-  requests: 500,
+const CREDITS_PACKAGE = {
+  credits: 500,
   price: 5,
   charLimit: 4000
 } as const;
 
 export function RequestsDialog() {
   const [error, setError] = useState<string | null>(null)
-  const { requests } = useRequests()
+  const { credits } = useCredits()
 
   const handlePurchase = async () => {
     setError(null)
     try {
-      const response = await fetch('/api/payment/create-request-session', {
+      const response = await fetch('/api/payment/create-credits-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          requests: REQUEST_PACKAGE.requests, 
-          price: REQUEST_PACKAGE.price 
+          amount: CREDITS_PACKAGE.credits, 
+          price: CREDITS_PACKAGE.price 
         }),
       });
       
@@ -48,16 +48,16 @@ export function RequestsDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" data-umami-event="buy-requests">Buy Requests</Button>
+        <Button variant="outline" data-umami-event="buy-requests">Buy Credits</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Purchase Requests</DialogTitle>
+          <DialogTitle>Purchase Credits</DialogTitle>
           <DialogDescription>
-            Get {REQUEST_PACKAGE.requests} requests for ${REQUEST_PACKAGE.price}.
+            Get {CREDITS_PACKAGE.credits} credits for ${CREDITS_PACKAGE.price}.
           </DialogDescription>
-          {requests !== null && (
-            <p className="text-sm text-muted-foreground">Current balance: {requests} requests</p>
+          {credits !== null && (
+            <p className="text-sm text-muted-foreground">Current balance: {credits} credits</p>
           )}
         </DialogHeader>
         {error && (
@@ -68,7 +68,7 @@ export function RequestsDialog() {
             onClick={handlePurchase} 
             className="w-full"
           >
-            {REQUEST_PACKAGE.requests} Requests - ${REQUEST_PACKAGE.price}
+            {CREDITS_PACKAGE.credits} Credits - ${CREDITS_PACKAGE.price}
           </Button>
         </div>
       </DialogContent>

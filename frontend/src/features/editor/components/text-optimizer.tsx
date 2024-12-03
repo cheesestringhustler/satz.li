@@ -13,7 +13,7 @@ import ModelSelector from '@/features/editor/components/model-selector';
 import { useLanguageDetection } from '@/features/editor/hooks/use-language-detection';
 import { useTextState } from '@/features/editor/hooks/use-text-state';
 import { optimizeText } from '@/features/editor/services';
-import { useRequests } from '@/context/requests-context';
+import { useCredits } from '@/context/credits-context';
 
 // Define Quill options
 const QUILL_OPTIONS = {
@@ -50,7 +50,7 @@ function TextOptimizer() {
         detectLanguageDebounced
     } = useLanguageDetection();
 
-    const { refreshRequests } = useRequests();
+    const { refreshCredits } = useCredits();
 
     // Initialize Quill editor
     useEffect(() => {
@@ -167,7 +167,7 @@ function TextOptimizer() {
 
                 if (done) {
                     textState.setIsOptimizationComplete(true);
-                    await refreshRequests();
+                    await refreshCredits();
                     break;
                 }
             }

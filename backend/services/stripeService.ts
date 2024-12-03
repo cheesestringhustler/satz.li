@@ -5,7 +5,6 @@ import { config } from "../config/index.ts";
 const stripe = new Stripe(config.stripe.secretKey);
 
 export async function createPaymentSession(
-    sessionType: string,
     userId: number,
     email: string,
     amount: number,
@@ -62,8 +61,8 @@ export async function createPaymentSession(
                 price_data: {
                     currency: 'usd',
                     product_data: {
-                        name: `${amount} Requests`,
-                        description: 'Requests for AI text optimization',
+                        name: `${amount} Credits`,
+                        description: 'Credits for AI text optimization',
                     },
                     unit_amount: price * 100, // Convert to cents
                 },
@@ -75,8 +74,7 @@ export async function createPaymentSession(
         cancel_url: `${config.environment.isProduction ? 'https' : 'http'}://${config.environment.domain}/payment/cancel`,
         metadata: {
             userId: userId.toString(),
-            amount: amount.toString(),
-            sessionType: sessionType
+            amount: amount.toString()
         },
     });
 
@@ -101,42 +99,35 @@ export async function handleStripeWebhookEvent(
                 const session = event.data.object as Stripe.Checkout.Session;
                 const userId = Number(session.metadata?.userId);
                 const amount = Number(session.metadata?.amount);
-                const sessionType = session.metadata?.sessionType;
                 const paymentIntentId = session.payment_intent as string;
 
-                switch (sessionType) {
-                    case 'buyRequests':
-                        if (!userId || !amount) {
-                            throw new Error('Missing userId or amount in session metadata');
-                        }
-
-                        // Add requests to user's balance
-                        await sql`
-                            UPDATE users 
-                            SET requests_balance = requests_balance + ${amount}
-                            WHERE id = ${userId}
-                        `;
-
-                        // Log the transaction with payment intent ID
-                        await sql`
-                            INSERT INTO requests_transactions (
-                                user_id,
-                                amount,
-                                transaction_type,
-                                reference_id,
-                                notes
-                            ) VALUES (
-                                ${userId},
-                                ${amount},
-                                'purchase_requests',
-                                ${paymentIntentId},
-                                'Stripe payment'
-                            )
-                        `;
-                        break;
-                    default:
-                        break;
+                if (!userId || !amount) {
+                    throw new Error('Missing userId or amount in session metadata');
                 }
+
+                // Add credits to user's balance
+                await sql`
+                    UPDATE users 
+                    SET credits_balance = credits_balance + ${amount}
+                    WHERE id = ${userId}
+                `;
+
+                // Log the transaction with payment intent ID
+                await sql`
+                    INSERT INTO requests_transactions (
+                        user_id,
+                        amount,
+                        transaction_type,
+                        reference_id,
+                        notes
+                    ) VALUES (
+                        ${userId},
+                        ${amount},
+                        'purchase_requests',
+                        ${paymentIntentId},
+                        'Stripe payment'
+                    )
+                `;
 
                 if (!config.environment.isProduction) {
                     console.log(`Stripe webhook event: ${event.type}`);

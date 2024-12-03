@@ -1,5 +1,5 @@
 import { logUsage, updateUsageLog } from "./usageService.ts";
-import { checkRequestAvailability } from "./requestsService.ts";
+import { checkCreditsAvailability } from "./creditsService.ts";
 import type { OptimizationResult } from "./textService.ts";
 
 interface OptimizationLogResult {
@@ -14,7 +14,7 @@ export async function validateAndPrepareOptimization(
     inputTokens: number
 ): Promise<number> {
     // Check if user has available requests
-    const isAvailable = await checkRequestAvailability(userId, text);
+    const isAvailable = await checkCreditsAvailability(userId, text);
     if (!isAvailable) {
         throw new Error('Insufficient requests');
     }
@@ -26,7 +26,7 @@ export async function validateAndPrepareOptimization(
         modelType,
         inputTokens,
         outputTokens: 0,
-        creditsUsed: 1,
+        creditsUsed: 0,
         status: 'processing'
     });
 

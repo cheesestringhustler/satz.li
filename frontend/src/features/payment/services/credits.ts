@@ -2,7 +2,7 @@ import { getAuthHeader } from '@/lib/http';
 
 export async function getCreditsBalance(): Promise<number | object> {
     try {
-        const response = await fetch('/api/credits', {
+        const response = await fetch('/api/credits/balance', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -15,20 +15,18 @@ export async function getCreditsBalance(): Promise<number | object> {
     }
 }
 
-export async function getCreditsEstimate(modelType: string, { text, languageCode, customPrompt }: 
-    { text: string, languageCode: string, customPrompt: string }): 
-    Promise<{ creditsEstimate: number }> {
+export async function checkCreditsAvailability(text: string): Promise<{ isAvailable: boolean }> {
     try {
-        const response = await fetch('/api/credits/estimate', {
+        const response = await fetch('/api/credits/check-availability', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 ...getAuthHeader(),
             },
-            body: JSON.stringify({ modelType, text, languageCode, customPrompt }),
+            body: JSON.stringify({ text }),
         });
         return response.json();
     } catch (err) {
-        return { creditsEstimate: -1 };
+        return { isAvailable: false };
     }
 } 

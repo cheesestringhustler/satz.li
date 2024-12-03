@@ -5,16 +5,16 @@ import { generateMagicLinkEmail, sendEmail } from "./emailService.ts";
 
 export async function createOrGetUser(email: string) {
     let user = await sql`
-        SELECT id, email, requests_balance 
+        SELECT id, email, credits_balance 
         FROM users 
         WHERE email = ${email}
     `;
 
     if (user.length === 0) {
         user = await sql`
-            INSERT INTO users (email, requests_balance)
+            INSERT INTO users (email, credits_balance)
             VALUES (${email}, ${config.requestLimits.newUserRequestsBalance})
-            RETURNING id, email, requests_balance
+            RETURNING id, email, credits_balance
         `;
     }
 
@@ -23,7 +23,7 @@ export async function createOrGetUser(email: string) {
 
 export async function validateToken(token: string) {
     const result = await sql`
-        SELECT u.id, u.email, u.requests_balance
+        SELECT u.id, u.email, u.credits_balance
         FROM jwt_tokens t
         JOIN users u ON t.user_id = u.id
         WHERE t.token = ${token}

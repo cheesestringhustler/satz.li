@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useRequests } from '@/context/requests-context';
+import { useCredits } from '@/context/credits-context';
 import { toast } from '@/hooks/use-toast';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { refreshRequests } = useRequests();
+  const { refreshCredits } = useCredits();
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function PaymentSuccess() {
         }
 
         // Refresh requests balance
-        await refreshRequests();
+        await refreshCredits();
         
         // Show success message
         toast({

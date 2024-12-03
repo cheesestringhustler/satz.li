@@ -31,7 +31,7 @@ const EditorControls = ({
                     {isLoading ? "Optimizing..." : "Optimize"}
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                    Uses 1 request
+                    Uses 1 credit
                 </span>
             </div>
             <div className='flex flex-col gap-1 w-full'>
