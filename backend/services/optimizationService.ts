@@ -1,3 +1,4 @@
+import { config } from "../config/index.ts";
 import { logUsage, updateUsageLog } from "./usageService.ts";
 import { checkCreditsAvailability } from "./creditsService.ts";
 import type { OptimizationResult } from "./textService.ts";
@@ -10,13 +11,24 @@ interface OptimizationLogResult {
 export async function validateAndPrepareOptimization(
     userId: number,
     text: string,
+    customPrompt: string,
     modelType: string,
     inputTokens: number
 ): Promise<number> {
     // Check if user has available requests
-    const isAvailable = await checkCreditsAvailability(userId, text);
+    const isAvailable = await checkCreditsAvailability(userId);
     if (!isAvailable) {
         throw new Error('Insufficient requests');
+    }
+
+    // Check text length (assuming there's a character limit)
+    if (text.length > config.requestLimits.defaultMaxTextChars) {
+        throw new Error('Text too long');
+    }
+
+    // Check custom prompt length
+    if (customPrompt.length > config.requestLimits.defaultMaxPromptChars) {
+        throw new Error('Custom prompt too long');
     }
 
     // Create initial usage log

@@ -23,7 +23,7 @@ export const optimizeTextHandler = async (req: Request, res: Response) => {
         const inputTokens = await getTokenCountFromMessageContent(modelConfig, { text, languageCode, customPrompt });
 
         // Validate request and prepare logging
-        const usageLogId = await validateAndPrepareOptimization(userId, text, modelType, inputTokens);
+        const usageLogId = await validateAndPrepareOptimization(userId, text, customPrompt, modelType, inputTokens);
 
         // Process the optimization
         const result = await optimizeText(text, languageCode, customPrompt, modelType, res);

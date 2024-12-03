@@ -1,14 +1,16 @@
 import express from "npm:express@4";
 import cookieParser from "npm:cookie-parser";
+import { Request, Response } from "npm:express@4";
+import path from "npm:path";
+
 import { config } from "./config/index.ts";
+import { handleStripeWebhookHandler } from "./controllers/paymentController.ts";
 import { runMigrations } from "./db/migrations.ts";
 import authRoutes from "./routes/authRoutes.ts";
-import textRoutes from "./routes/textRoutes.ts";
+import configRoutes from "./routes/configRoutes.ts";
 import creditsRoutes from "./routes/creditsRoutes.ts";
 import paymentRoutes from "./routes/paymentRoutes.ts";
-import { handleStripeWebhookHandler } from "./controllers/paymentController.ts";
-import path from "npm:path";
-import { Request, Response } from "npm:express@4";
+import textRoutes from "./routes/textRoutes.ts";
 
 const app = express();
 
@@ -28,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', textRoutes);
 app.use('/api', creditsRoutes);
 app.use('/api', paymentRoutes);
+app.use('/api', configRoutes);
 
 // Handle React Router routes
 app.get('*', (_req: Request, res: Response) => {

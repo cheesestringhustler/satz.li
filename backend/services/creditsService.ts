@@ -6,17 +6,12 @@ export async function getCreditsBalance(userId: number): Promise<number> {
     return result[0].credits_balance;
 }
 
-export async function checkCreditsAvailability(userId: number, text: string): Promise<boolean> {
+export async function checkCreditsAvailability(userId: number): Promise<boolean> {
     // Get user's current request balance
     const creditsBalance = await getCreditsBalance(userId);
 
     // Check if user has any requests available
     if (creditsBalance <= 0) {
-        return false;
-    }
-
-    // Check text length (assuming there's a character limit)
-    if (text.length > config.requestLimits.defaultMaxTextChars) {
         return false;
     }
 

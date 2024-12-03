@@ -48,6 +48,7 @@ export const config = {
     },
     requestLimits: {
         newUserRequestsBalance: 10,
+        defaultMaxPromptChars: 120,
         defaultMaxTextChars: 4000,
         defaultMaxContextChars: 6000,
         defaultRequestCost: 1,

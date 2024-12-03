@@ -14,6 +14,7 @@ import { useLanguageDetection } from '@/features/editor/hooks/use-language-detec
 import { useTextState } from '@/features/editor/hooks/use-text-state';
 import { optimizeText } from '@/features/editor/services';
 import { useCredits } from '@/context/credits-context';
+import { useConfig } from '../context/config-context';
 
 // Define Quill options
 const QUILL_OPTIONS = {
@@ -39,6 +40,8 @@ function TextOptimizer() {
     const [pendingChanges, setPendingChanges] = useState<Delta>();
     const dmp = useRef(new diff_match_patch());
     const { toast } = useToast();
+    const [isOverLimit, setIsOverLimit] = useState(false);
+    const { requestLimits } = useConfig();
 
     const {
         language,
@@ -64,6 +67,19 @@ function TextOptimizer() {
             quillRef.current.on('text-change', (_delta, _oldDelta, source) => {
                 if (source === 'user') {
                     const text = quillRef.current?.getText() || '';
+                    const wasOverLimit = isOverLimit;
+                    const nowOverLimit = text.length > requestLimits.defaultMaxTextChars;
+                    
+                    // Only show toast when first exceeding the limit
+                    if (!wasOverLimit && nowOverLimit) {
+                        toast({
+                            variant: "destructive",
+                            title: "Character limit exceeded",
+                            description: `Text is limited to ${requestLimits.defaultMaxTextChars} characters. The text will not be processed until it's within the limit.`,
+                        });
+                    }
+                    
+                    setIsOverLimit(nowOverLimit);
                     textState.setText(text);
                     setPendingChanges(undefined);
                     textState.setOptimizedText('');
@@ -78,7 +94,7 @@ function TextOptimizer() {
         return () => {
             quillRef.current = undefined;
         };
-    }, [autoDetectEnabled]);
+    }, [autoDetectEnabled, isOverLimit, requestLimits]);
 
     // Apply pending changes to the editor
     useEffect(() => {
@@ -98,6 +114,15 @@ function TextOptimizer() {
 
     const handleOptimize = async (language: string, customPrompt: string) => {
         if (!quillRef.current) return;
+        
+        if (isOverLimit) {
+            toast({
+                variant: "destructive",
+                title: "Cannot process text",
+                description: `Please reduce the text to ${requestLimits.defaultMaxTextChars} characters or less before processing.`,
+            });
+            return;
+        }
 
         setIsLoading(true);
         const originalText = textState.text;
@@ -239,6 +264,18 @@ function TextOptimizer() {
                 const text = await navigator.clipboard.readText();
                 quillRef.current.setText(text);
                 textState.setText(text);
+                
+                if (text.length > requestLimits.defaultMaxTextChars) {
+                    toast({
+                        variant: "destructive",
+                        title: "Character limit exceeded",
+                        description: `Pasted text exceeds the ${requestLimits.defaultMaxTextChars} character limit. The text will not be processed until it's within the limit.`,
+                    });
+                    setIsOverLimit(true);
+                } else {
+                    setIsOverLimit(false);
+                }
+                
                 if (autoDetectEnabled) {
                     detectLanguageDebounced(text);
                 }
@@ -246,7 +283,7 @@ function TextOptimizer() {
                 console.error('Failed to paste:', error);
             }
         }
-    }, [autoDetectEnabled]);
+    }, [autoDetectEnabled, requestLimits]);
 
     return (
         <div className='flex flex-row gap-4'>
@@ -284,6 +321,9 @@ function TextOptimizer() {
                             ref={editorRef}
                             className="border rounded-md min-h-[384px] max-h-[80vh]"
                         />
+                        <div className={`text-xs ${isOverLimit ? 'text-destructive' : 'text-muted-foreground'} text-right`}>
+                            {textState.text.length}/{requestLimits.defaultMaxTextChars}
+                        </div>
                     </div>
                 </div>
             </div>
