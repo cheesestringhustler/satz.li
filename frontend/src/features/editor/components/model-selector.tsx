@@ -5,7 +5,13 @@ interface ModelSelectorProps {
     setModel: (model: string) => void;
 }
 
-const models = ['gpt-4o-mini', 'gpt-4o', 'claude-3-haiku', 'claude-3-5-sonnet'];
+const models = [
+    { id: 'gpt-4o-mini', name: 'GPT-4o Mini (default)', description: 'works for most requests' },
+    { id: 'gpt-4o', name: 'GPT-4o', description: 'better at prompts' },
+    { id: 'claude-3-haiku', name: 'Claude 3 Haiku', description: 'similar to Mini' },
+    { id: 'claude-3-5-sonnet', name: 'Claude 3 Sonnet', description: 'better at prompts' }
+];
+
 function ModelSelector({ model, setModel }: ModelSelectorProps) {
     return (
         <div className='flex flex-col gap-2'>
@@ -14,15 +20,19 @@ function ModelSelector({ model, setModel }: ModelSelectorProps) {
                     <SelectValue placeholder="Select model" />
                 </SelectTrigger>
                 <SelectContent>
-                    {models.map((model) => (
-                        <SelectItem key={model} value={model}>
-                            {model}
-                        </SelectItem>
+                    {models.map((modelInfo) => (
+                        <>
+                            { modelInfo.description ? <span className="text-xs text-muted-foreground pl-1 pb-0">{`${modelInfo.description}`}</span> : null }
+                            <SelectItem key={modelInfo.id} value={modelInfo.id}>
+                                {`${modelInfo.name || modelInfo.id}`}
+                            </SelectItem>
+                        </>
                     ))}
                 </SelectContent>
             </Select>
         </div>
     );
 }
+
 
 export default ModelSelector;
