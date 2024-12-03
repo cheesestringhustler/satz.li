@@ -19,6 +19,7 @@ export async function optimizeText(
     languageCode: string,
     customPrompt: string,
     modelType: string,
+    context: string | undefined,
     res: Response
 ): Promise<OptimizationResult | null> {
     const startTime = Date.now();
@@ -36,11 +37,11 @@ export async function optimizeText(
         const model = new modelConfig.class(modelConfig.config) as unknown as BaseChatModel;
         const prompt = PROMPTS[languageCode as keyof typeof PROMPTS] || PROMPTS.en;
         
-        inputTokens = await getTokenCountFromMessageContent(modelConfig, { text, languageCode, customPrompt });
+        inputTokens = await getTokenCountFromMessageContent(modelConfig, { text, languageCode, customPrompt, context });
 
         // Process the request
         const chain = prompt.pipe(model);
-        const stream = await chain.stream({ text, languageCode, customPrompt });
+        const stream = await chain.stream({ text, languageCode, customPrompt, context });
 
         let fullResponse = '';
         res.header('Content-Type', 'text/plain');

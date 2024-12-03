@@ -25,7 +25,7 @@ export async function getTokenCount(model: ModelConfig, text: MessageContent): P
     }
 }
 
-export async function getTokenCountFromMessageContent(model: ModelConfig, values: { text: string, languageCode: string, customPrompt: string }): Promise<number> {
+export async function getTokenCountFromMessageContent(model: ModelConfig, values: { text: string, languageCode: string, customPrompt: string, context?: string }): Promise<number> {
     const prompt = PROMPTS[values.languageCode as keyof typeof PROMPTS] || PROMPTS.en;
     const messages = await prompt.formatMessages(values);
     

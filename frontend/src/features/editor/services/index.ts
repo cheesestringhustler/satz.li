@@ -1,13 +1,13 @@
 import { getAuthHeader } from '@/lib/http';
 
-export async function optimizeText(text: string, languageCode: string, customPrompt: string, modelType: string): Promise<ReadableStreamDefaultReader<Uint8Array>> {
+export async function optimizeText(text: string, languageCode: string, customPrompt: string, modelType: string, context?: string): Promise<ReadableStreamDefaultReader<Uint8Array>> {
     const response = await fetch('/api/optimize', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             ...getAuthHeader(),
         },
-        body: JSON.stringify({ text, languageCode, customPrompt, modelType }),
+        body: JSON.stringify({ text, languageCode, customPrompt, modelType, context }),
     });
 
     if (!response.ok) {

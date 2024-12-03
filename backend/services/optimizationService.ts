@@ -13,7 +13,8 @@ export async function validateAndPrepareOptimization(
     text: string,
     customPrompt: string,
     modelType: string,
-    inputTokens: number
+    inputTokens: number,
+    context?: string
 ): Promise<number> {
     // Check if user has available requests
     const isAvailable = await checkCreditsAvailability(userId);
@@ -29,6 +30,11 @@ export async function validateAndPrepareOptimization(
     // Check custom prompt length
     if (customPrompt.length > config.requestLimits.defaultMaxPromptChars) {
         throw new Error('Custom prompt too long');
+    }
+
+    // Check context length if provided
+    if (context && context.length > config.requestLimits.defaultMaxContextChars) {
+        throw new Error('Context too long');
     }
 
     // Create initial usage log

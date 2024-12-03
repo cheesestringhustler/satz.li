@@ -37,10 +37,12 @@ function TextOptimizer() {
     const [isLoading, setIsLoading] = useState(false);
     const [modelType, setModelType] = useState('gpt-4o-mini');
     const [customPrompt, setCustomPrompt] = useState('');
+    const [context, setContext] = useState('');
     const [pendingChanges, setPendingChanges] = useState<Delta>();
     const dmp = useRef(new diff_match_patch());
     const { toast } = useToast();
     const [isOverLimit, setIsOverLimit] = useState(false);
+    const [isContextOverLimit, setIsContextOverLimit] = useState(false);
     const { requestLimits } = useConfig();
 
     const {
@@ -124,6 +126,15 @@ function TextOptimizer() {
             return;
         }
 
+        if (isContextOverLimit) {
+            toast({
+                variant: "destructive",
+                title: "Cannot process text",
+                description: `Please reduce the context to ${requestLimits.defaultMaxContextChars} characters or less before processing.`,
+            });
+            return;
+        }
+
         setIsLoading(true);
         const originalText = textState.text;
         textState.setOriginalText(originalText);
@@ -134,7 +145,8 @@ function TextOptimizer() {
                 originalText,
                 language,
                 customPrompt,
-                modelType.toString()
+                modelType.toString(),
+                context
             );
 
             while (true) {
@@ -285,45 +297,52 @@ function TextOptimizer() {
         }
     }, [autoDetectEnabled, requestLimits]);
 
+    // Add context change handler
+    const handleContextChange = (value: string) => {
+        const wasOverLimit = isContextOverLimit;
+        const nowOverLimit = value.length > requestLimits.defaultMaxContextChars;
+        
+        // Only show toast when first exceeding the limit
+        if (!wasOverLimit && nowOverLimit) {
+            toast({
+                variant: "destructive",
+                title: "Character limit exceeded",
+                description: `Context is limited to ${requestLimits.defaultMaxContextChars} characters. The text will not be processed until it's within the limit.`,
+            });
+        }
+        
+        setIsContextOverLimit(nowOverLimit);
+        setContext(value);
+    };
+
     return (
-        <div className='flex flex-row gap-4'>
-            <div className='flex flex-col gap-4 flex-1'>
-                <div className='flex flex-row gap-4 items-center flex-1'>
-                    <LanguageSelector
-                        language={language}
-                        setLanguage={setLanguage}
-                    />
-                    <div className="flex items-center gap-2">
-                        <Switch
-                            id="autoDetect"
-                            checked={autoDetectEnabled}
-                            onCheckedChange={handleAutoDetectChange}
-                        />
-                        {isLoadingLanguageDetection ? (
-                            <Label htmlFor="autoDetect" className='text-xs text-gray-500 animate-pulse'>
-                                Auto-detecting language...
-                            </Label>
-                        ) : (
-                            <Label htmlFor="autoDetect" className='text-xs text-gray-500'>
-                                Auto-detect language
-                            </Label>
-                        )}
-                    </div>
-                </div>
-                <div className='flex flex-col gap-4'>
+        <div className="flex flex-col gap-6 p-6">
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4">
                     <CustomPromptInput
                         customPrompt={customPrompt}
                         setCustomPrompt={setCustomPrompt}
                         onOptimize={() => handleOptimize(language, customPrompt)}
                     />
                     <div className="flex flex-col gap-2">
-                        <div
-                            ref={editorRef}
-                            className="border rounded-md min-h-[384px] max-h-[80vh]"
+                        <Label htmlFor="context">Context</Label>
+                        <textarea
+                            id="context"
+                            className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholder="Add context for optimization..."
+                            value={context}
+                            onChange={(e) => handleContextChange(e.target.value)}
                         />
-                        <div className={`text-xs ${isOverLimit ? 'text-destructive' : 'text-muted-foreground'} text-right`}>
-                            {textState.text.length}/{requestLimits.defaultMaxTextChars}
+                        <div className={`text-xs ${isContextOverLimit ? 'text-destructive' : 'text-muted-foreground'} text-right`}>
+                            {context.length}/{requestLimits.defaultMaxContextChars}
                         </div>
+                    </div>
+                    <div
+                        ref={editorRef}
+                        className="border rounded-md min-h-[384px] max-h-[80vh]"
+                    />
+                    <div className={`text-xs ${isOverLimit ? 'text-destructive' : 'text-muted-foreground'} text-right`}>
+                        {textState.text.length}/{requestLimits.defaultMaxTextChars}
                     </div>
                 </div>
             </div>

@@ -6,8 +6,8 @@ import {
 
 export const createBasePrompt = (
     systemMessage: string,
-    humanMessage: string = "Geben Sie nur den korrigierten Text zurück. Zu korrigierender Text:\n{text}",
-    customInstructionsMessage: string = "Befolgen Sie zusätzlich zu den obigen Anweisungen diese Anweisungen: {customPrompt}"
+    humanMessage: string,
+    customInstructionsMessage: string
 ) => ChatPromptTemplate.fromMessages([
     SystemMessagePromptTemplate.fromTemplate(systemMessage),
     HumanMessagePromptTemplate.fromTemplate(humanMessage),
@@ -31,18 +31,25 @@ export const PROMPTS = {
 
         Mit freundliche Grüsse
         Max Mustermann"
-        `
+        `,
+        `Geben Sie nur den korrigierten Text zurück. Zu korrigierender Text:\n{text}\n
+        Kontext zum Text:\n{context}`,
+        `Befolgen Sie zusätzlich zu den obigen Anweisungen diese Anweisungen: {customPrompt}`
     ),
     'de': createBasePrompt(
         `Sie sind ein Textassistent, der Texte des Benutzers verbessert, erstellt und verändert.\n
         Folgende Anweisungen müssen Sie befolgen, um den Text des Benutzers zu verbessern:\n
-        1. Grammatik und Syntax: Grundlegende Fehlerkorrektur, Grammatikvorschläge und strukturelle Änderungen zur Verbesserung der Lesbarkeit.`
+        1. Grammatik und Syntax: Grundlegende Fehlerkorrektur, Grammatikvorschläge und strukturelle Änderungen zur Verbesserung der Lesbarkeit.`,
+        `Geben Sie nur den korrigierten Text zurück. Zu korrigierender Text:\n{text}\n
+        Kontext zum Text:\n{context}`,
+        `Befolgen Sie zusätzlich zu den obigen Anweisungen diese Anweisungen: {customPrompt}`
     ),
     'en': createBasePrompt(
         `You are a Text Assistant here to improve, generate and change text from the user.\n
         Following are a set of instructions that you need to follow in order to improve the users text:\n
         1. Grammar and Syntax: Basic error correction, grammar suggestions, and structural changes to improve readability.`,
-        "Please only return the corrected text. Text to correct:\n{text}",
-        "Additionally follow these instructions: {customPrompt}"
+        `Please only return the corrected text. Text to correct:\n{text}\n
+        Context to the text:\n{context}`,
+        `Additionally follow these instructions: {customPrompt}`
     )
 };

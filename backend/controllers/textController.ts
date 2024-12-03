@@ -8,7 +8,7 @@ import { deductCredits } from "../services/creditsService.ts";
 import { MODEL_MAP } from "../utils/models.ts";
 
 export const optimizeTextHandler = async (req: Request, res: Response) => {
-    const { text, languageCode, customPrompt, modelType } = req.body;
+    const { text, languageCode, customPrompt, modelType, context } = req.body;
     const authenticatedReq = req as AuthenticatedRequest;
     const userId = authenticatedReq.user.id;
 
@@ -20,13 +20,13 @@ export const optimizeTextHandler = async (req: Request, res: Response) => {
         }
 
         // Get input tokens for validation
-        const inputTokens = await getTokenCountFromMessageContent(modelConfig, { text, languageCode, customPrompt });
+        const inputTokens = await getTokenCountFromMessageContent(modelConfig, { text, languageCode, customPrompt, context });
 
         // Validate request and prepare logging
-        const usageLogId = await validateAndPrepareOptimization(userId, text, customPrompt, modelType, inputTokens);
+        const usageLogId = await validateAndPrepareOptimization(userId, text, customPrompt, modelType, inputTokens, context);
 
         // Process the optimization
-        const result = await optimizeText(text, languageCode, customPrompt, modelType, res);
+        const result = await optimizeText(text, languageCode, customPrompt, modelType, context, res);
 
         // Deduct one request after successful processing
         await deductCredits(userId, `text_optimization`);
