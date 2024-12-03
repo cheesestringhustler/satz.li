@@ -38,16 +38,17 @@ export const createRequestPaymentSessionHandler = async (req: Request, res: Resp
     const { requests, price } = req.body;
     
     // Validate request parameters
-    if (!requests || !price || requests !== 500 || price !== 5) {
+    if (!requests || !price || requests !== 500 || price !== 5) { // TODO: Make dynamic and check for valid values for package
         return res.status(400).json({ error: "Invalid request package" });
     }
     
     try {
         const session = await createPaymentSession(
+            "buyRequests",
             authenticatedReq.user.id,
             authenticatedReq.user.email,
             requests,
-            price
+            price,
         );
         res.json({ sessionId: session.id, url: session.url });
     } catch (err) {

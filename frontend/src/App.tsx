@@ -2,7 +2,7 @@ import './styles/App.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider, useTheme } from "@/components/theme/theme-provider";
 import { useRoutes } from 'react-router-dom';
-import { CreditsProvider } from '@/context/credits-context';
+import { RequestsProvider } from '@/context/requests-context';
 import { routes } from './routes';
 
 function App() {
@@ -10,14 +10,14 @@ function App() {
     const routeElements = useRoutes(routes);
 
     return (
-        <CreditsProvider>
+          <RequestsProvider>
             <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
                 <div className={`${theme} min-h-screen flex flex-col`}>
                     {routeElements}
                 </div>
                 <Toaster />
             </ThemeProvider>
-        </CreditsProvider>
+          </RequestsProvider>
     )
 }
 

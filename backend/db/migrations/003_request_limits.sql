@@ -2,8 +2,8 @@
 ALTER TABLE users
 ADD COLUMN requests_balance INTEGER NOT NULL DEFAULT 10;
 
--- Create request_transactions table
-CREATE TABLE request_transactions (
+-- Create requests_transactions table
+CREATE TABLE requests_transactions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     amount INTEGER NOT NULL,

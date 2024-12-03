@@ -13,7 +13,7 @@ import ModelSelector from '@/features/editor/components/model-selector';
 import { useLanguageDetection } from '@/features/editor/hooks/use-language-detection';
 import { useTextState } from '@/features/editor/hooks/use-text-state';
 import { optimizeText } from '@/features/editor/services';
-import { useCredits } from '@/context/credits-context';
+import { useRequests } from '@/context/requests-context';
 
 // Define Quill options
 const QUILL_OPTIONS = {
@@ -50,7 +50,7 @@ function TextOptimizer() {
         detectLanguageDebounced
     } = useLanguageDetection();
 
-    const { refreshCredits } = useCredits();
+    const { refreshRequests } = useRequests();
 
     // Initialize Quill editor
     useEffect(() => {
@@ -167,17 +167,17 @@ function TextOptimizer() {
 
                 if (done) {
                     textState.setIsOptimizationComplete(true);
-                    await refreshCredits();
+                    await refreshRequests();
                     break;
                 }
             }
         } catch (error) {
-            // Show toast for insufficient credits
+            // Show toast for insufficient requests
             if (error instanceof Error && error.message.includes('Insufficient credits')) {
                 toast({
                     variant: "destructive",
-                    title: "Insufficient Credits",
-                    description: "You don't have enough credits to perform this optimization. Please purchase more credits to continue.",
+                    title: "Insufficient Requests",
+                    description: "You don't have enough requests to perform this optimization. Please purchase more requests to continue.",
                 });
             } else if (error instanceof Error && error.message.includes('Unauthorized')) {
                 toast({

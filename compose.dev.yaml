@@ -36,7 +36,7 @@ services:
       - satz-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`satz.localhost`)"
+      - "traefik.http.routers.frontend.rule=Host(`satz.localhost`) || Host(`localhost`)"
       - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.services.frontend.loadbalancer.server.port=5173"
 
@@ -56,6 +56,11 @@ services:
       - db
     networks:
       - satz-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`localhost`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.services.backend.loadbalancer.server.port=3000"
 
   db:
     image: postgres:17.1-alpine

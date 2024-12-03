@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { getCreditsBalance } from '@/features/credits/services';
+import { getCreditsBalance } from '@/features/payment/services/credits';
 
 interface CreditsContextType {
     credits: number | null;

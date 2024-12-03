@@ -45,7 +45,7 @@ export const config = {
         baseDecimalMultiplier: 1000000,
     },
     requestLimits: {
-        defaultRequestBalance: 500,
+        newUserRequestsBalance: 10,
         defaultMaxTextChars: 4000,
         defaultMaxContextChars: 6000,
         defaultRequestCost: 1,

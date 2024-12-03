@@ -10,7 +10,7 @@ export default function PaymentCancel() {
     toast({
       variant: "destructive",
       title: "Payment Cancelled",
-      description: "Your payment was cancelled. No credits have been added to your account.",
+      description: "Your payment was cancelled. No requests have been added to your account.",
     });
     
     // Redirect to home after 2 seconds

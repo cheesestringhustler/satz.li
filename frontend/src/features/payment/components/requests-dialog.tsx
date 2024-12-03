@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useState } from "react"
-import { useCredits } from '@/context/credits-context'
+import { useRequests } from '@/context/requests-context'
 
 const REQUEST_PACKAGE = {
   requests: 500,
@@ -16,9 +16,9 @@ const REQUEST_PACKAGE = {
   charLimit: 4000
 } as const;
 
-export function CreditsDialog() {
+export function RequestsDialog() {
   const [error, setError] = useState<string | null>(null)
-  const { credits } = useCredits()
+  const { requests } = useRequests()
 
   const handlePurchase = async () => {
     setError(null)
@@ -56,8 +56,8 @@ export function CreditsDialog() {
           <DialogDescription>
             Get {REQUEST_PACKAGE.requests} requests for ${REQUEST_PACKAGE.price}.
           </DialogDescription>
-          {credits !== null && (
-            <p className="text-sm text-muted-foreground">Current balance: {credits} requests</p>
+          {requests !== null && (
+            <p className="text-sm text-muted-foreground">Current balance: {requests} requests</p>
           )}
         </DialogHeader>
         {error && (

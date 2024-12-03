@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useCredits } from '@/context/credits-context';
+import { useRequests } from '@/context/requests-context';
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -19,14 +19,14 @@ export function LoginDialog() {
   const [error, setError] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [showLogout, setShowLogout] = useState(false)
-  const { credits, refreshCredits } = useCredits();
+  const { requests, refreshRequests } = useRequests();
   
   useEffect(() => {
     // Check auth status on mount and get email
     checkAuthStatus().then((status) => {
       setIsLoggedIn(status.authenticated)
       if (status.authenticated) {
-        refreshCredits()
+        refreshRequests()
         const savedEmail = localStorage.getItem('userEmail')
         if (savedEmail) setEmail(savedEmail)
       } else {
@@ -83,8 +83,8 @@ export function LoginDialog() {
   if (isLoggedIn) {
     return (
       <div className="flex items-center gap-2">
-        {credits !== null && (
-          <span className="text-sm text-gray-600">{credits} credits</span>
+        {requests !== null && (
+          <span className="text-sm text-gray-600">{requests} requests</span>
         )}
         <Button
           onMouseEnter={() => setShowLogout(true)}
