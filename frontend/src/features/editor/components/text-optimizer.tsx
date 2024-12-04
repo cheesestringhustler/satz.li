@@ -52,6 +52,7 @@ function TextOptimizer() {
     const [activeTab, setActiveTab] = useState<'prompt' | 'context'>('prompt');
     const promptRef = useRef<HTMLDivElement>(null);
     const contextRef = useRef<HTMLTextAreaElement>(null);
+    const totalCharLimit = requestLimits.defaultMaxTextChars + requestLimits.defaultMaxContextChars;
 
     const {
         language,
@@ -77,15 +78,16 @@ function TextOptimizer() {
             quillRef.current.on('text-change', (_delta, _oldDelta, source) => {
                 if (source === 'user') {
                     const text = quillRef.current?.getText() || '';
+                    const totalCount = text.length + (context?.length || 0);
                     const wasOverLimit = isOverLimit;
-                    const nowOverLimit = text.length > requestLimits.defaultMaxTextChars;
+                    const nowOverLimit = totalCount > totalCharLimit;
                     
                     // Only show toast when first exceeding the limit
                     if (!wasOverLimit && nowOverLimit) {
                         toast({
                             variant: "destructive",
                             title: "Character limit exceeded",
-                            description: `Text is limited to ${requestLimits.defaultMaxTextChars} characters. The text will not be processed until it's within the limit.`,
+                            description: `Combined text and context is limited to ${totalCharLimit} characters. The text will not be processed until it's within the limit.`,
                         });
                     }
                     
@@ -307,15 +309,16 @@ function TextOptimizer() {
 
     // Add context change handler
     const handleContextChange = (value: string) => {
+        const totalCount = value.length + textState.text.length;
         const wasOverLimit = isContextOverLimit;
-        const nowOverLimit = value.length > requestLimits.defaultMaxContextChars;
+        const nowOverLimit = totalCount > totalCharLimit;
         
         // Only show toast when first exceeding the limit
         if (!wasOverLimit && nowOverLimit) {
             toast({
                 variant: "destructive",
                 title: "Character limit exceeded",
-                description: `Context is limited to ${requestLimits.defaultMaxContextChars} characters. The text will not be processed until it's within the limit.`,
+                description: `Combined text and context is limited to ${totalCharLimit} characters. The text will not be processed until it's within the limit.`,
             });
         }
         
@@ -356,8 +359,8 @@ function TextOptimizer() {
                                     <TabsTrigger value="prompt">Prompt</TabsTrigger>
                                     <TabsTrigger value="context">Context</TabsTrigger>
                                 </TabsList>
-                                <div className={`text-xs ${isOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}>
-                                    Characters: {textState.text.length}/{requestLimits.defaultMaxTextChars}
+                                <div className={`text-xs ${isOverLimit || isContextOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                    Total Characters: {textState.text.length + (context?.length || 0)}/{totalCharLimit}
                                 </div>
                             </div>
 
@@ -393,7 +396,7 @@ function TextOptimizer() {
                                         onChange={(e) => handleContextChange(e.target.value)}
                                     />
                                     <div className={`text-xs ${isContextOverLimit ? 'text-destructive' : 'text-muted-foreground'} text-right`}>
-                                        {context.length}/{requestLimits.defaultMaxContextChars}
+                                        Characters: {context.length}
                                     </div>
                                 </div>
                             </TabsContent>
@@ -407,6 +410,9 @@ function TextOptimizer() {
                                 style={{ minHeight: '0' }}
                             />
                         </div>
+                    </div>
+                    <div className={`text-xs ${isOverLimit ? 'text-destructive' : 'text-muted-foreground'} text-right pt-2`}>
+                        Characters: {textState.text.length}
                     </div>
                     </CardContent>
                 </Card>

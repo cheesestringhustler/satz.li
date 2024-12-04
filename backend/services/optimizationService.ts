@@ -23,18 +23,14 @@ export async function validateAndPrepareOptimization(
     }
 
     // Check text length (assuming there's a character limit)
-    if (text.length > config.requestLimits.defaultMaxTextChars) {
-        throw new Error('Text too long');
+    const totalCharCount = text.length + (context?.length || 0);
+    if (totalCharCount > config.requestLimits.defaultMaxTextChars + config.requestLimits.defaultMaxContextChars) {
+        throw new Error('Combined text and context too long');
     }
 
     // Check custom prompt length
     if (customPrompt.length > config.requestLimits.defaultMaxPromptChars) {
         throw new Error('Custom prompt too long');
-    }
-
-    // Check context length if provided
-    if (context && context.length > config.requestLimits.defaultMaxContextChars) {
-        throw new Error('Context too long');
     }
 
     // Create initial usage log

@@ -83,9 +83,9 @@ export function CustomPromptInput({
                     maxLength={requestLimits.defaultMaxPromptChars}
                     className="min-w-[300px]"
                 />
-                <div className="text-xs text-muted-foreground text-right">
+                {/* <div className="text-xs text-muted-foreground text-right">
                     {customPrompt.length}/{requestLimits.defaultMaxPromptChars}
-                </div>
+                </div> */}
             </div>
             <div className="flex flex-wrap gap-2">
                 {templatePrompts.map((prompt) => (
