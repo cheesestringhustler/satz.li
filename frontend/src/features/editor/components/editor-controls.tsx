@@ -114,7 +114,12 @@ export function EditorControls({
                         </div>
                     </Button>
                 </TooltipTrigger>
-                <TooltipContent>Optimize text with AI</TooltipContent>
+                <TooltipContent>
+                    <div className="text-center">
+                        <div>Optimize text with AI</div>
+                        <div className="text-xs text-muted-foreground">Uses 1 credit</div>
+                    </div>
+                </TooltipContent>
             </Tooltip>
         </div>
     );

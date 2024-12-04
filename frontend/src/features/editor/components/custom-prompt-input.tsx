@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useConfig } from '../context/config-context';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
 
 export const templatePrompts = [
     "Make it shorter",
@@ -21,11 +22,11 @@ export interface CustomPromptInputProps {
     className?: string;
 }
 
-export function CustomPromptInput({ 
-    customPrompt, 
-    setCustomPrompt, 
+export function CustomPromptInput({
+    customPrompt,
+    setCustomPrompt,
     onOptimize,
-    className 
+    className
 }: CustomPromptInputProps) {
     const { toast } = useToast();
     const { requestLimits } = useConfig();
@@ -54,10 +55,10 @@ export function CustomPromptInput({
             const prompts = customPrompt.split('; ').filter(p => p !== prompt);
             setCustomPrompt(prompts.join('; '));
         } else {
-            const newPrompt = customPrompt 
+            const newPrompt = customPrompt
                 ? `${customPrompt}; ${prompt}`
                 : prompt;
-            
+
             if (newPrompt.length > requestLimits.defaultMaxPromptChars) {
                 toast({
                     variant: "destructive",
@@ -72,7 +73,10 @@ export function CustomPromptInput({
 
     return (
         <div className={cn('flex flex-col gap-2', className)}>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                    <Label htmlFor="customPrompt">Prompt</Label>
+                </div>
                 <Input
                     id="customPrompt"
                     type="text"
@@ -83,9 +87,6 @@ export function CustomPromptInput({
                     maxLength={requestLimits.defaultMaxPromptChars}
                     className="min-w-[300px]"
                 />
-                {/* <div className="text-xs text-muted-foreground text-right">
-                    {customPrompt.length}/{requestLimits.defaultMaxPromptChars}
-                </div> */}
             </div>
             <div className="flex flex-wrap gap-2">
                 {templatePrompts.map((prompt) => (
