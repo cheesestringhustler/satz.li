@@ -72,7 +72,9 @@ function TextOptimizer() {
             quillRef.current = new Quill(editorRef.current, QUILL_OPTIONS);
 
             // Set default text
-            quillRef.current.setText(textState.text);
+            if (textState.text) {
+                quillRef.current.setText(textState.text);
+            }
 
             // Handle text changes
             quillRef.current.on('text-change', (_delta, _oldDelta, source) => {

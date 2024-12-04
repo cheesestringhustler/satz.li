@@ -54,4 +54,14 @@ export async function deductCredits(userId: number, referenceId: string): Promis
     });
 
     return result;
+}
+
+export async function hasUserPurchasedCredits(userId: number): Promise<boolean> {
+    const result = await sql`
+        SELECT COUNT(*) as purchase_count 
+        FROM credits_transactions 
+        WHERE user_id = ${userId} 
+        AND transaction_type = 'purchase_credits'
+    `;
+    return result[0].purchase_count > 0;
 } 

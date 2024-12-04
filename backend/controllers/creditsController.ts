@@ -1,6 +1,6 @@
 import { Request, Response } from "npm:express@4";
 import { AuthenticatedRequest } from "../types/express.ts";
-import { getCreditsBalance, checkCreditsAvailability } from "../services/creditsService.ts";
+import { getCreditsBalance, checkCreditsAvailability, hasUserPurchasedCredits } from "../services/creditsService.ts";
 
 export const getCreditsBalanceHandler = async (req: Request, res: Response) => {
     const authenticatedReq = req as AuthenticatedRequest;
@@ -20,4 +20,18 @@ export const checkCreditsAvailabilityHandler = async (req: Request, res: Respons
 
     const isAvailable = await checkCreditsAvailability(userId);
     res.json({ isAvailable });
+};
+
+export const checkPurchaseHistoryHandler = async (req: Request, res: Response) => {
+    const authenticatedReq = req as AuthenticatedRequest;
+    const userId = authenticatedReq.user.id;
+    
+    try {
+        const hasPurchased = await hasUserPurchasedCredits(userId);
+        res.json({ hasPurchased });
+    } catch (err) {
+        res.status(500).json({ 
+            error: err instanceof Error ? err.message : "Failed to check purchase history" 
+        });
+    }
 }; 

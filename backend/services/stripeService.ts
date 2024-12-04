@@ -106,9 +106,10 @@ export async function handleStripeWebhookEvent(
                 }
 
                 // Add credits to user's balance
+                // TODO: make this dynamic check prior to purchase
                 await sql`
                     UPDATE users 
-                    SET credits_balance = credits_balance + ${amount}
+                    SET credits_balance = credits_balance + ${config.credits.tier1Credits}
                     WHERE id = ${userId}
                 `;
 

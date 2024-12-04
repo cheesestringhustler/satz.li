@@ -29,4 +29,19 @@ export async function checkCreditsAvailability(text: string): Promise<{ isAvaila
     } catch (err) {
         return { isAvailable: false };
     }
+}
+
+export async function checkPurchaseHistory(): Promise<{ hasPurchased: boolean }> {
+    try {
+        const response = await fetch('/api/credits/purchase-history', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader(),
+            },
+        });
+        return response.json();
+    } catch (err) {
+        return { hasPurchased: false };
+    }
 } 
