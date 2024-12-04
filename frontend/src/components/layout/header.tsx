@@ -22,9 +22,9 @@ export default function Header() {
                     <h1 className="font-semibold">satz.li</h1>
                     <span className="text-sm text-muted-foreground">AI-Powered Text Assistance</span>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
                     {isLoggedIn && credits !== null && (
-                        <span className="text-xs text-muted-foreground">{credits} credits</span>
+                        <span className="text-xs text-muted-foreground mr-2">{credits} credits</span>
                     )}
                     {!isLoggedIn && <LoginDialog />}
                     {isLoggedIn && <SettingsDialog />}
