@@ -9,7 +9,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TooltipProvider } from '@/components/ui/tooltip';
 
 import CustomPromptInput from '@/features/editor/components/custom-prompt-input';
 import EditorControls from '@/features/editor/components/editor-controls';
@@ -346,7 +345,6 @@ function TextOptimizer() {
 
     return (
         <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto">
-            <TooltipProvider>
                 <Card>
                     <CardContent className="p-6">
                         <div className="flex flex-col gap-6">
@@ -460,7 +458,6 @@ function TextOptimizer() {
                         </div>
                     </CardContent>
                 </Card>
-            </TooltipProvider>
         </div>
     );
 }

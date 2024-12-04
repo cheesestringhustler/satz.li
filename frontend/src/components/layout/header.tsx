@@ -4,9 +4,13 @@ import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { useEffect, useState } from 'react';
 import { checkAuthStatus } from '@/features/auth/services';
 import { useCredits } from '@/context/credits-context';
+import { CreditsDialog } from '@/features/payment/components/credits-dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 
 export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isCreditsDialogOpen, setIsCreditsDialogOpen] = useState(false);
     const { credits } = useCredits();
 
     useEffect(() => {
@@ -24,7 +28,29 @@ export default function Header() {
                 </div>
                 <div className="flex items-center gap-1">
                     {isLoggedIn && credits !== null && (
-                        <span className="text-xs text-muted-foreground mr-2">{credits} credits</span>
+                        <>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button 
+                                        variant="ghost" 
+                                        className="text-xs text-muted-foreground mr-2 hover:text-foreground"
+                                        onClick={() => setIsCreditsDialogOpen(true)}
+                                    >
+                                        {credits} credits
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <div className="text-center">
+                                        <div>Available Credits</div>
+                                        <div className="text-xs text-muted-foreground">Click to buy more</div>
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                            <CreditsDialog 
+                                open={isCreditsDialogOpen} 
+                                onOpenChange={setIsCreditsDialogOpen}
+                            />
+                        </>
                     )}
                     {!isLoggedIn && <LoginDialog />}
                     {isLoggedIn && <SettingsDialog />}

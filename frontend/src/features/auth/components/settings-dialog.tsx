@@ -7,7 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Settings } from "lucide-react"
-import { RequestsDialog } from '@/features/payment/components/requests-dialog'
+import { CreditsDialog } from '@/features/payment/components/credits-dialog'
 import { useState, useEffect } from "react"
 import { logout } from '@/features/auth/services'
 import { useCredits } from '@/context/credits-context'
@@ -78,7 +78,7 @@ export function SettingsDialog() {
           </div>
           <div className="border-t my-2" />
           <div className="flex flex-col gap-2">
-            <RequestsDialog />
+            <CreditsDialog showTrigger />
             <Button 
               variant="destructive" 
               onClick={handleLogout}

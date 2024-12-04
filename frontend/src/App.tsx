@@ -1,10 +1,11 @@
-import './styles/App.css';
-import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider, useTheme } from "@/components/theme/theme-provider";
-import { useRoutes } from 'react-router-dom';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from '@/components/ui/toaster';
 import { CreditsProvider } from '@/context/credits-context';
 import { ConfigProvider } from '@/features/editor/context/config-context';
+import { useRoutes } from 'react-router-dom';
 import { routes } from './routes';
+import './styles/App.css';
 
 function App() {
     const { theme } = useTheme()
@@ -14,10 +15,12 @@ function App() {
         <CreditsProvider>
             <ConfigProvider>
                 <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-                    <div className={`${theme} min-h-screen flex flex-col`}>
-                        {routeElements}
-                    </div>
-                    <Toaster />
+                    <TooltipProvider>
+                        <div className={`${theme} min-h-screen flex flex-col`}>
+                            {routeElements}
+                        </div>
+                        <Toaster />
+                    </TooltipProvider>
                 </ThemeProvider>
             </ConfigProvider>
         </CreditsProvider>

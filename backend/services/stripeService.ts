@@ -10,75 +10,80 @@ export async function createPaymentSession(
     amount: number,
     price: number
 ) {
-    // First check if user exists
-    const user = await sql`
-        SELECT id, stripe_customer_id 
-        FROM users 
-        WHERE id = ${userId}
-    `;
-
-    if (user.length === 0) {
-        throw new Error('User not found');
-    }
-
-    let customerId = user[0].stripe_customer_id;
-
-    if (!customerId) {
-        // Try to find existing customer by email
-        const customers = await stripe.customers.list({
-            limit: 1,
-            email: email
-        });
-
-        if (customers.data.length > 0) {
-            // Use existing customer
-            customerId = customers.data[0].id;
-        } else {
-            // Create new customer
-            const customer = await stripe.customers.create({
-                email: email,
-                metadata: {
-                    userId: userId.toString()
-                }
-            });
-            customerId = customer.id;
-        }
-
-        // Store the customer ID in the users table
-        await sql`
-            UPDATE users 
-            SET stripe_customer_id = ${customerId}
+    try {
+        // First check if user exists
+        const user = await sql`
+            SELECT id, stripe_customer_id 
+            FROM users 
             WHERE id = ${userId}
         `;
-    }
 
-    // Create the session with the customer ID
-    const session = await stripe.checkout.sessions.create({
-        customer: customerId,
-        payment_method_types: ['card'],
-        line_items: [
-            {
-                price_data: {
-                    currency: 'usd',
-                    product_data: {
-                        name: `${amount} Credits`,
-                        description: 'Credits for AI text optimization',
+        if (user.length === 0) {
+            throw new Error('User not found');
+        }
+
+        let customerId = user[0].stripe_customer_id;
+
+        if (!customerId) {
+            // Try to find existing customer by email
+            const customers = await stripe.customers.list({
+                limit: 1,
+                email: email
+            });
+
+            if (customers.data.length > 0) {
+                // Use existing customer
+                customerId = customers.data[0].id;
+            } else {
+                // Create new customer
+                const customer = await stripe.customers.create({
+                    email: email,
+                    metadata: {
+                        userId: userId.toString()
+                    }
+                });
+                customerId = customer.id;
+            }
+
+            // Store the customer ID in the users table
+            await sql`
+                UPDATE users 
+                SET stripe_customer_id = ${customerId}
+                WHERE id = ${userId}
+            `;
+        }
+
+        // Create the session with the customer ID
+        const session = await stripe.checkout.sessions.create({
+            customer: customerId,
+            payment_method_types: ['card'],
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: {
+                            name: `${amount} Credits`,
+                            description: 'Credits for AI text optimization',
+                        },
+                        unit_amount: price * 100, // Convert to cents
                     },
-                    unit_amount: price * 100, // Convert to cents
+                    quantity: 1,
                 },
-                quantity: 1,
+            ],
+            mode: 'payment',
+            success_url: `${config.environment.isProduction ? 'https' : 'http'}://${config.environment.domain}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${config.environment.isProduction ? 'https' : 'http'}://${config.environment.domain}/payment/cancel`,
+            metadata: {
+                userId: userId.toString(),
+                amount: amount.toString()
             },
-        ],
-        mode: 'payment',
-        success_url: `${config.environment.isProduction ? 'https' : 'http'}://${config.environment.domain}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${config.environment.isProduction ? 'https' : 'http'}://${config.environment.domain}/payment/cancel`,
-        metadata: {
-            userId: userId.toString(),
-            amount: amount.toString()
-        },
-    });
+        });
 
-    return session;
+        return session;
+    } catch (error) {
+        console.error('Error creating payment session:', error);
+        throw error;
+    }
 }
 
 interface WebhookHandlerResponse {
