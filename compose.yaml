@@ -2,7 +2,7 @@ name: satz-compose
 
 services:
   traefik:
-    image: traefik:v3.1
+    image: traefik:v3.2.1
     command:
       - "--log.level=DEBUG"
       - "--providers.docker=true"

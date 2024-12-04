@@ -58,10 +58,9 @@ export async function deductCredits(userId: number, referenceId: string): Promis
 
 export async function hasUserPurchasedCredits(userId: number): Promise<boolean> {
     const result = await sql`
-        SELECT COUNT(*) as purchase_count 
-        FROM credits_transactions 
-        WHERE user_id = ${userId} 
-        AND transaction_type = 'purchase_credits'
+        SELECT stripe_customer_id
+        FROM users
+        WHERE id = ${userId}
     `;
-    return result[0].purchase_count > 0;
-} 
+    return result[0]?.stripe_customer_id != null;
+}

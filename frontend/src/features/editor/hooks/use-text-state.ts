@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { checkPurchaseHistory } from '@/features/payment/services/credits';
+// import { checkPurchaseHistory } from '@/features/payment/services/credits'; // TODO: handle hiding default text
 
 const DEFAULT_TEXT = `Willkommen bei satz.li!
 
@@ -24,8 +24,9 @@ export function useTextState() {
 
     useEffect(() => {
         const initializeText = async () => {
-            const { hasPurchased } = await checkPurchaseHistory();
-            setText(hasPurchased ? "" : DEFAULT_TEXT);
+            // const { hasPurchased } = await checkPurchaseHistory();
+            // setText(hasPurchased ? "" : DEFAULT_TEXT);
+            setText(DEFAULT_TEXT);
         };
 
         initializeText();

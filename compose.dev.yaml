@@ -3,7 +3,7 @@ name: satz-compose-dev
 services:
   # Development service for Traefik (check /etc/hosts)
   traefik:
-    image: traefik:v3.1
+    image: traefik:v3.2.1
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
