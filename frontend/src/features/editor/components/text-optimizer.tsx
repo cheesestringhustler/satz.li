@@ -448,8 +448,7 @@ function TextOptimizer() {
                                 <div className="border rounded-md shadow-sm">
                                     <div
                                         ref={editorRef}
-                                        className="aspect-[1/1.4142] w-full"
-                                        style={{ minHeight: '0' }}
+                                        className="w-full md:aspect-[1/1.4142] min-h-[300px] md:min-h-0"
                                     />
                                 </div>
                             </div>
