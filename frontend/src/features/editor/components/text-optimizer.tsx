@@ -241,6 +241,7 @@ function TextOptimizer() {
             }
 
             quillRef.current.setText(originalText);
+            await refreshCredits(); // Also refresh credits on error to ensure accurate count
         } finally {
             setIsLoading(false);
         }
@@ -325,6 +326,21 @@ function TextOptimizer() {
         setIsContextOverLimit(nowOverLimit);
         setContext(value);
     };
+
+    // Add keyboard shortcut handler
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                e.preventDefault();
+                if (!isLoading && !isOverLimit && !isContextOverLimit) {
+                    handleOptimize(language, customPrompt);
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [language, customPrompt, isLoading, isOverLimit, isContextOverLimit]);
 
     return (
         <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto">

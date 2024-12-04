@@ -6,7 +6,7 @@ export interface RequestLimits {
 }
 
 export const requestLimits: RequestLimits = {
-    defaultMaxPromptChars: 120,
+    defaultMaxPromptChars: 148,
     defaultMaxTextChars: 4000,
     defaultMaxContextChars: 6000,
     defaultRequestCost: 1,
