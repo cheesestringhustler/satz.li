@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useConfig } from '../context/config-context';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
+import { Cross2Icon } from '@radix-ui/react-icons';
 
 export const templatePrompts = [
     "Make it shorter",
@@ -77,16 +78,33 @@ export function CustomPromptInput({
                 <div className="flex items-center gap-2">
                     <Label htmlFor="customPrompt">Prompt</Label>
                 </div>
-                <Input
-                    id="customPrompt"
-                    type="text"
-                    placeholder="Provide an optional prompt such as 'use passive voice' or 'make it shorter'"
-                    value={customPrompt}
-                    onChange={(e) => handlePromptChange(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    maxLength={requestLimits.defaultMaxPromptChars}
-                    className="min-w-[300px]"
-                />
+                <div className="relative">
+                    <Input
+                        id="customPrompt"
+                        type="text"
+                        placeholder="Provide an optional prompt such as 'use passive voice' or 'make it shorter'"
+                        value={customPrompt}
+                        onChange={(e) => handlePromptChange(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        maxLength={requestLimits.defaultMaxPromptChars}
+                        className={cn(
+                            "min-w-[300px] pr-8",
+                            customPrompt && "bg-muted/50 border-primary/50"
+                        )}
+                    />
+                    {customPrompt && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 hover:bg-muted-foreground/10"
+                            onClick={() => setCustomPrompt('')}
+                        >
+                            <Cross2Icon className="h-3 w-3 text-muted-foreground" />
+                            <span className="sr-only">Clear prompt</span>
+                        </Button>
+                    )}
+                </div>
             </div>
             <div className="flex flex-wrap gap-2">
                 {templatePrompts.map((prompt) => (

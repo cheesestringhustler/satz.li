@@ -395,7 +395,7 @@ function TextOptimizer() {
                         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'prompt' | 'context')} className="w-full">
                             <div className="flex items-center justify-between mb-4">
                                 <TabsList>
-                                    <TabsTrigger value="prompt">Prompt</TabsTrigger>
+                                    <TabsTrigger value="prompt">Optimize</TabsTrigger>
                                     <TabsTrigger value="context">Context</TabsTrigger>
                                 </TabsList>
                                 <div className={`text-xs ${isOverLimit || isContextOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}>
