@@ -1,10 +1,16 @@
 import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
+import { 
+    CheckIcon, 
+    ClipboardCopyIcon, 
+    ClipboardIcon,
+    ReloadIcon, 
+    UpdateIcon 
+} from '@radix-ui/react-icons';
 
-interface EditorControlsProps {
+export interface EditorControlsProps {
     isLoading: boolean;
     isOptimizationComplete: boolean;
-    modelType: string;
     text: string;
     languageCode: string;
     customPrompt: string;
@@ -13,48 +19,81 @@ interface EditorControlsProps {
     onRevertChanges: () => void;
     onCopy: () => void;
     onPaste: () => void;
+    className?: string;
 }
 
-const EditorControls = ({
+export function EditorControls({
     isLoading,
     isOptimizationComplete,
     onOptimize,
     onApplyChanges,
     onRevertChanges,
     onCopy,
-    onPaste
-}: EditorControlsProps) => {
+    onPaste,
+    className
+}: EditorControlsProps) {
     return (
-        <div className="flex flex-col items-start gap-7 self-start max-h-[476px]">
-            <div className="flex flex-col gap-2 w-full">
-                <Button onClick={onOptimize} disabled={isLoading}>
-                    {isLoading ? "Optimizing..." : "Optimize"}
+        <div className={cn("flex items-center gap-2 justify-end w-full", className)}>
+            <div className="flex-1" />
+            <div className="flex items-center gap-2">
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={onApplyChanges}
+                    disabled={!isOptimizationComplete}
+                    title="Apply changes"
+                >
+                    <CheckIcon className="h-4 w-4" />
                 </Button>
-                <span className="text-xs text-muted-foreground">
-                    Uses 1 credit
-                </span>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={onRevertChanges}
+                    disabled={!isOptimizationComplete}
+                    title="Revert changes"
+                >
+                    <ReloadIcon className="h-4 w-4" />
+                </Button>
             </div>
-            <div className='flex flex-col gap-1 w-full'>
-                <span className='text-xs text-muted-foreground'>Changes:</span>
-                <div className='flex flex-nowrap gap-2'>        
-                    <Button onClick={onApplyChanges} disabled={!isOptimizationComplete}>
-                        Apply
-                    </Button>
-                    <Button onClick={onRevertChanges} disabled={!isOptimizationComplete}>
-                        Revert
-                    </Button>
-                </div>
 
-                <span className='mt-2 text-xs text-muted-foreground'>Clipboard:</span>
-                <div className='flex flex-nowrap gap-2'>
-                    <Button onClick={onCopy}>
-                        Copy
-                    </Button>
-                    <Button onClick={onPaste}>
-                        Paste
-                    </Button>
-                </div>
+            <div className="flex items-center gap-2 border-l pl-2">
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={onCopy}
+                    title="Copy to clipboard"
+                >
+                    <ClipboardCopyIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={onPaste}
+                    title="Paste from clipboard"
+                >
+                    <ClipboardIcon className="h-4 w-4" />
+                </Button>
             </div>
+
+            
+
+            <Button 
+                onClick={onOptimize} 
+                disabled={isLoading}
+                className="gap-2 min-w-24"
+            >
+                {isLoading ? (
+                    <>
+                        <UpdateIcon className="h-4 w-4 animate-spin" />
+                        Optimizing...
+                    </>
+                ) : (
+                    <>
+                        <ReloadIcon className="h-4 w-4" />
+                        Optimize
+                    </>
+                )}
+            </Button>
         </div>
     );
 }

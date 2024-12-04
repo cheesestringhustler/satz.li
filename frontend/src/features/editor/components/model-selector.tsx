@@ -1,38 +1,47 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
-interface ModelSelectorProps {
+export interface Model {
+    id: string;
+    name: string;
+    description: string;
+}
+
+export interface ModelSelectorProps {
     model: string;
     setModel: (model: string) => void;
+    className?: string;
 }
 
-const models = [
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini (default)', description: 'works for most requests' },
-    { id: 'gpt-4o', name: 'GPT-4o', description: 'better at prompts' },
-    { id: 'claude-3-haiku', name: 'Claude 3 Haiku', description: 'similar to Mini' },
-    { id: 'claude-3-5-sonnet', name: 'Claude 3 Sonnet', description: 'better at prompts' }
+const models: Model[] = [
+    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Works for most requests' },
+    { id: 'gpt-4o', name: 'GPT-4o', description: 'Better at prompts' },
+    { id: 'claude-3-haiku', name: 'Claude 3 Haiku', description: 'Similar to Mini' },
+    { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet', description: 'Better at prompts' }
 ];
 
-function ModelSelector({ model, setModel }: ModelSelectorProps) {
+export function ModelSelector({ model, setModel, className }: ModelSelectorProps) {
     return (
-        <div className='flex flex-col gap-2'>
-            <Select value={model} onValueChange={setModel}>
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select model" />
-                </SelectTrigger>
-                <SelectContent>
-                    {models.map((modelInfo) => (
-                        <>
-                            { modelInfo.description ? <span className="text-xs text-muted-foreground pl-1 pb-0">{`${modelInfo.description}`}</span> : null }
-                            <SelectItem key={modelInfo.id} value={modelInfo.id}>
-                                {`${modelInfo.name || modelInfo.id}`}
-                            </SelectItem>
-                        </>
-                    ))}
-                </SelectContent>
-            </Select>
-        </div>
+        <Select value={model} onValueChange={setModel}>
+            <SelectTrigger className={cn("w-[180px] text-left", className)}>
+                <SelectValue placeholder="Select model" />
+            </SelectTrigger>
+            <SelectContent align="start">
+                {models.map((modelInfo) => (
+                    <SelectItem 
+                        key={modelInfo.id} 
+                        value={modelInfo.id}
+                        className="flex flex-col items-start py-3"
+                    >
+                        <div className="flex flex-col gap-1">
+                            <span className="font-medium">{modelInfo.name}</span>
+                            <span className="text-xs text-muted-foreground leading-none">{modelInfo.description}</span>
+                        </div>
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
     );
 }
-
 
 export default ModelSelector;

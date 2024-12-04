@@ -2,23 +2,33 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useConfig } from '../context/config-context';
+import { cn } from '@/lib/utils';
 
-interface CustomPromptInputProps {
+export const templatePrompts = [
+    "Make it shorter",
+    "Use simpler language",
+    "Use passive voice",
+    "Improve flow",
+    "Make it more formal",
+] as const;
+
+export type TemplatePrompt = typeof templatePrompts[number];
+
+export interface CustomPromptInputProps {
     customPrompt: string;
     setCustomPrompt: (customPrompt: string) => void;
     onOptimize: () => void;
+    className?: string;
 }
 
-const CustomPromptInput = ({ customPrompt, setCustomPrompt, onOptimize }: CustomPromptInputProps) => {
+export function CustomPromptInput({ 
+    customPrompt, 
+    setCustomPrompt, 
+    onOptimize,
+    className 
+}: CustomPromptInputProps) {
     const { toast } = useToast();
     const { requestLimits } = useConfig();
-    const templatePrompts = [
-        "Make it shorter",
-        "Use simpler language",
-        "Use passive voice",
-        "Improve flow",
-        "Make it more formal",
-    ];
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -39,18 +49,15 @@ const CustomPromptInput = ({ customPrompt, setCustomPrompt, onOptimize }: Custom
         setCustomPrompt(value);
     };
 
-    const handleTemplateClick = (prompt: string) => {
-        // If prompt is already included, remove it
+    const handleTemplateClick = (prompt: TemplatePrompt) => {
         if (customPrompt.includes(prompt)) {
             const prompts = customPrompt.split('; ').filter(p => p !== prompt);
             setCustomPrompt(prompts.join('; '));
         } else {
-            // Add new prompt, joining with semicolon if there are existing prompts
             const newPrompt = customPrompt 
                 ? `${customPrompt}; ${prompt}`
                 : prompt;
             
-            // Check if adding the template would exceed the limit
             if (newPrompt.length > requestLimits.defaultMaxPromptChars) {
                 toast({
                     variant: "destructive",
@@ -64,7 +71,7 @@ const CustomPromptInput = ({ customPrompt, setCustomPrompt, onOptimize }: Custom
     };
 
     return (
-        <div className='flex flex-col gap-2 flex-1'>
+        <div className={cn('flex flex-col gap-2', className)}>
             <div className="flex flex-col gap-1">
                 <Input
                     id="customPrompt"
@@ -74,18 +81,20 @@ const CustomPromptInput = ({ customPrompt, setCustomPrompt, onOptimize }: Custom
                     onChange={(e) => handlePromptChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     maxLength={requestLimits.defaultMaxPromptChars}
+                    className="min-w-[300px]"
                 />
                 <div className="text-xs text-muted-foreground text-right">
                     {customPrompt.length}/{requestLimits.defaultMaxPromptChars}
                 </div>
             </div>
             <div className="flex flex-wrap gap-2">
-                {templatePrompts.map((prompt, index) => (
+                {templatePrompts.map((prompt) => (
                     <Button
-                        key={index}
+                        key={prompt}
                         variant={customPrompt.includes(prompt) ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleTemplateClick(prompt)}
+                        className="h-7 px-2 text-xs"
                     >
                         {prompt}
                     </Button>
@@ -93,6 +102,6 @@ const CustomPromptInput = ({ customPrompt, setCustomPrompt, onOptimize }: Custom
             </div>
         </div>
     );
-};
+}
 
 export default CustomPromptInput;
