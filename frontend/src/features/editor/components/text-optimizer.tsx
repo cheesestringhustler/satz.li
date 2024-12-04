@@ -81,7 +81,7 @@ function TextOptimizer() {
                     const totalCount = text.length + (context?.length || 0);
                     const wasOverLimit = isOverLimit;
                     const nowOverLimit = totalCount > totalCharLimit;
-                    
+
                     // Only show toast when first exceeding the limit
                     if (!wasOverLimit && nowOverLimit) {
                         toast({
@@ -90,7 +90,7 @@ function TextOptimizer() {
                             description: `Combined text and context is limited to ${totalCharLimit} characters. The text will not be processed until it's within the limit.`,
                         });
                     }
-                    
+
                     setIsOverLimit(nowOverLimit);
                     textState.setText(text);
                     setPendingChanges(undefined);
@@ -126,7 +126,7 @@ function TextOptimizer() {
 
     const handleOptimize = async (language: string, customPrompt: string) => {
         if (!quillRef.current) return;
-        
+
         if (isOverLimit) {
             toast({
                 variant: "destructive",
@@ -287,7 +287,7 @@ function TextOptimizer() {
                 const text = await navigator.clipboard.readText();
                 quillRef.current.setText(text);
                 textState.setText(text);
-                
+
                 if (text.length > requestLimits.defaultMaxTextChars) {
                     toast({
                         variant: "destructive",
@@ -298,7 +298,7 @@ function TextOptimizer() {
                 } else {
                     setIsOverLimit(false);
                 }
-                
+
                 if (autoDetectEnabled) {
                     detectLanguageDebounced(text);
                 }
@@ -313,7 +313,7 @@ function TextOptimizer() {
         const totalCount = value.length + textState.text.length;
         const wasOverLimit = isContextOverLimit;
         const nowOverLimit = totalCount > totalCharLimit;
-        
+
         // Only show toast when first exceeding the limit
         if (!wasOverLimit && nowOverLimit) {
             toast({
@@ -322,7 +322,7 @@ function TextOptimizer() {
                 description: `Combined text and context is limited to ${totalCharLimit} characters. The text will not be processed until it's within the limit.`,
             });
         }
-        
+
         setIsContextOverLimit(nowOverLimit);
         setContext(value);
     };
@@ -347,112 +347,115 @@ function TextOptimizer() {
             <TooltipProvider>
                 <Card>
                     <CardContent className="p-6">
-                    <div className="flex flex-col gap-6">
-                        {/* Controls Section */}
-                        <div className="flex items-center gap-4 border-b pb-4">
-                            <ModelSelector
-                                model={modelType}
-                                setModel={setModelType}
-                            />
-                            <div className="flex items-center gap-4">
-                                <LanguageSelector
-                                    language={language}
-                                    setLanguage={setLanguage}
-                                    autoDetectEnabled={autoDetectEnabled}
-                                    onAutoDetectChange={handleAutoDetectChange}
-                                    isLoading={isLoadingLanguageDetection}
+                        <div className="flex flex-col gap-6">
+                            {/* Controls Section */}
+                            <div className="flex items-center gap-4 border-b pb-4">
+                                <ModelSelector
+                                    model={modelType}
+                                    setModel={setModelType}
                                 />
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div>
-                                            <Switch
-                                                id="auto-detect"
-                                                checked={autoDetectEnabled}
-                                                onCheckedChange={handleAutoDetectChange}
-                                            />
+                                <div className="flex items-center gap-4">
+                                    <LanguageSelector
+                                        language={language}
+                                        setLanguage={setLanguage}
+                                        autoDetectEnabled={autoDetectEnabled}
+                                        onAutoDetectChange={handleAutoDetectChange}
+                                        isLoading={isLoadingLanguageDetection}
+                                    />
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div>
+                                                <Switch
+                                                    id="auto-detect"
+                                                    checked={autoDetectEnabled}
+                                                    onCheckedChange={handleAutoDetectChange}
+                                                />
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            Auto-detect language
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                                <EditorControls
+                                    isLoading={isLoading}
+                                    isOptimizationComplete={textState.isOptimizationComplete}
+                                    text={textState.text}
+                                    languageCode={language}
+                                    customPrompt={customPrompt}
+                                    onOptimize={() => handleOptimize(language, customPrompt)}
+                                    onApplyChanges={handleApplyChanges}
+                                    onRevertChanges={handleRevertChanges}
+                                    onCopy={handleCopy}
+                                    onPaste={handlePaste}
+                                />
+                            </div>
+
+                            {/* Input Tabs */}
+                            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'prompt' | 'context')} className="w-full">
+                                <div className="flex items-center justify-between mb-4">
+                                    <TabsList>
+                                        <TabsTrigger value="prompt">Optimize</TabsTrigger>
+                                        <TabsTrigger value="context">Context</TabsTrigger>
+                                    </TabsList>
+                                    <div className={`text-xs ${isOverLimit || isContextOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                        Total Characters: {textState.text.length + (context?.length || 0)}/{totalCharLimit}
+                                    </div>
+                                </div>
+
+                                <TabsContent value="prompt" className="mt-0">
+                                    <div ref={promptRef}>
+                                        <CustomPromptInput
+                                            customPrompt={customPrompt}
+                                            setCustomPrompt={setCustomPrompt}
+                                            onOptimize={() => handleOptimize(language, customPrompt)}
+                                        />
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="context" className="mt-0">
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="context">Additional Context</Label>
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <InfoCircledIcon className="h-4 w-4 text-muted-foreground" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    Add relevant context to help optimize your text more accurately
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        Auto-detect language
-                                    </TooltipContent>
-                                </Tooltip>
-                            </div>
-                            <EditorControls
-                                isLoading={isLoading}
-                                isOptimizationComplete={textState.isOptimizationComplete}
-                                text={textState.text}
-                                languageCode={language}
-                                customPrompt={customPrompt}
-                                onOptimize={() => handleOptimize(language, customPrompt)}
-                                onApplyChanges={handleApplyChanges}
-                                onRevertChanges={handleRevertChanges}
-                                onCopy={handleCopy}
-                                onPaste={handlePaste}
-                            />
-                        </div>
+                                        <textarea
+                                            ref={contextRef}
+                                            id="context"
+                                            className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                                            placeholder="..."
+                                            value={context}
+                                            onChange={(e) => handleContextChange(e.target.value)}
+                                        />
+                                        <div className={`text-xs ${isContextOverLimit ? 'text-destructive' : 'text-muted-foreground'} text-right`}>
+                                            Characters: {context.length}
+                                        </div>
+                                    </div>
+                                </TabsContent>
+                            </Tabs>
 
-                        {/* Input Tabs */}
-                        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'prompt' | 'context')} className="w-full">
-                            <div className="flex items-center justify-between mb-4">
-                                <TabsList>
-                                    <TabsTrigger value="prompt">Optimize</TabsTrigger>
-                                    <TabsTrigger value="context">Context</TabsTrigger>
-                                </TabsList>
-                                <div className={`text-xs ${isOverLimit || isContextOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}>
-                                    Total Characters: {textState.text.length + (context?.length || 0)}/{totalCharLimit}
-                                </div>
-                            </div>
-
-                            <TabsContent value="prompt" className="mt-0">
-                                <div ref={promptRef}>
-                                    <CustomPromptInput
-                                        customPrompt={customPrompt}
-                                        setCustomPrompt={setCustomPrompt}
-                                        onOptimize={() => handleOptimize(language, customPrompt)}
+                            {/* Editor Section */}
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="editor">Text</Label>
+                                <div className="border rounded-md shadow-sm">
+                                    <div
+                                        ref={editorRef}
+                                        className="aspect-[1/1.4142] w-full"
+                                        style={{ minHeight: '0' }}
                                     />
                                 </div>
-                            </TabsContent>
-
-                            <TabsContent value="context" className="mt-0">
-                                <div className="flex flex-col gap-2">
-                                    <div className="flex items-center gap-2">
-                                        <Label htmlFor="context">Additional Context</Label>
-                                        <Tooltip>
-                                            <TooltipTrigger>
-                                                <InfoCircledIcon className="h-4 w-4 text-muted-foreground" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                Add relevant context to help optimize your text more accurately
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </div>
-                                    <textarea
-                                        ref={contextRef}
-                                        id="context"
-                                        className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
-                                        placeholder="..."
-                                        value={context}
-                                        onChange={(e) => handleContextChange(e.target.value)}
-                                    />
-                                    <div className={`text-xs ${isContextOverLimit ? 'text-destructive' : 'text-muted-foreground'} text-right`}>
-                                        Characters: {context.length}
-                                    </div>
-                                </div>
-                            </TabsContent>
-                        </Tabs>
-
-                        {/* Editor Section */}
-                        <div className="border rounded-md shadow-sm">
-                            <div
-                                ref={editorRef}
-                                className="aspect-[1/1.4142] w-full"
-                                style={{ minHeight: '0' }}
-                            />
+                            </div>
                         </div>
-                    </div>
-                    <div className={`text-xs ${isOverLimit ? 'text-destructive' : 'text-muted-foreground'} text-right pt-2`}>
-                        Characters: {textState.text.length}
-                    </div>
+                        <div className={`text-xs ${isOverLimit ? 'text-destructive' : 'text-muted-foreground'} text-right pt-2`}>
+                            Characters: {textState.text.length}
+                        </div>
                     </CardContent>
                 </Card>
             </TooltipProvider>
