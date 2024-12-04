@@ -338,6 +338,29 @@ function TextOptimizer() {
                                 model={modelType}
                                 setModel={setModelType}
                             />
+                            <div className="flex items-center gap-4">
+                                <LanguageSelector
+                                    language={language}
+                                    setLanguage={setLanguage}
+                                    autoDetectEnabled={autoDetectEnabled}
+                                    onAutoDetectChange={handleAutoDetectChange}
+                                    isLoading={isLoadingLanguageDetection}
+                                />
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div>
+                                            <Switch
+                                                id="auto-detect"
+                                                checked={autoDetectEnabled}
+                                                onCheckedChange={handleAutoDetectChange}
+                                            />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        Auto-detect language
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
                             <EditorControls
                                 isLoading={isLoading}
                                 isOptimizationComplete={textState.isOptimizationComplete}
@@ -390,7 +413,7 @@ function TextOptimizer() {
                                     <textarea
                                         ref={contextRef}
                                         id="context"
-                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                                        className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
                                         placeholder="Add context for optimization..."
                                         value={context}
                                         onChange={(e) => handleContextChange(e.target.value)}

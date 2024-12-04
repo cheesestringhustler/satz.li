@@ -33,8 +33,13 @@ export function LanguageSelector({
     return (
         <Select 
             value={language} 
-            onValueChange={setLanguage}
-            disabled={autoDetectEnabled || isLoading}
+            onValueChange={(value) => {
+                setLanguage(value);
+                if (autoDetectEnabled && onAutoDetectChange) {
+                    onAutoDetectChange(false);
+                }
+            }}
+            disabled={isLoading}
         >
             <SelectTrigger className={cn("w-[200px]", className)}>
                 <SelectValue placeholder="Select language" />

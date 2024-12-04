@@ -7,6 +7,7 @@ import {
     ReloadIcon, 
     UpdateIcon 
 } from '@radix-ui/react-icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface EditorControlsProps {
     isLoading: boolean;
@@ -36,64 +37,83 @@ export function EditorControls({
         <div className={cn("flex items-center gap-2 justify-end w-full", className)}>
             <div className="flex-1" />
             <div className="flex items-center gap-2">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={onApplyChanges}
-                    disabled={!isOptimizationComplete}
-                    title="Apply changes"
-                >
-                    <CheckIcon className="h-4 w-4" />
-                </Button>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={onRevertChanges}
-                    disabled={!isOptimizationComplete}
-                    title="Revert changes"
-                >
-                    <ReloadIcon className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={onApplyChanges}
+                            disabled={!isOptimizationComplete}
+                        >
+                            <CheckIcon className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Apply changes</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={onRevertChanges}
+                            disabled={!isOptimizationComplete}
+                        >
+                            <ReloadIcon className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Revert changes</TooltipContent>
+                </Tooltip>
             </div>
 
             <div className="flex items-center gap-2 border-l pl-2">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={onCopy}
-                    title="Copy to clipboard"
-                >
-                    <ClipboardCopyIcon className="h-4 w-4" />
-                </Button>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={onPaste}
-                    title="Paste from clipboard"
-                >
-                    <ClipboardIcon className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={onCopy}
+                        >
+                            <ClipboardCopyIcon className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy to clipboard</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={onPaste}
+                        >
+                            <ClipboardIcon className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Paste from clipboard</TooltipContent>
+                </Tooltip>
             </div>
 
-            
-
-            <Button 
-                onClick={onOptimize} 
-                disabled={isLoading}
-                className="gap-2 min-w-24"
-            >
-                {isLoading ? (
-                    <>
-                        <UpdateIcon className="h-4 w-4 animate-spin" />
-                        Optimizing...
-                    </>
-                ) : (
-                    <>
-                        <ReloadIcon className="h-4 w-4" />
-                        Optimize
-                    </>
-                )}
-            </Button>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button 
+                        onClick={onOptimize} 
+                        disabled={isLoading}
+                        className="gap-2 min-w-24"
+                    >
+                        {isLoading ? (
+                            <>
+                                <UpdateIcon className="h-4 w-4 animate-spin" />
+                                Optimizing...
+                            </>
+                        ) : (
+                            <>
+                                <ReloadIcon className="h-4 w-4" />
+                                Optimize
+                            </>
+                        )}
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>Optimize text with AI</TooltipContent>
+            </Tooltip>
         </div>
     );
 }

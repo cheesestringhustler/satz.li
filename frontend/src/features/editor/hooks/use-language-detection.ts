@@ -40,7 +40,7 @@ export function useLanguageDetection({ initialAutoDetect = false }: UseLanguageD
                 detectLanguageCore(text);
             }
         }, 2000),
-        [autoDetectEnabled, lastDetectedSample]
+        [autoDetectEnabled, detectLanguageCore]
     );
 
     return {
