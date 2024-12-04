@@ -97,19 +97,21 @@ export function EditorControls({
                     <Button 
                         onClick={onOptimize} 
                         disabled={isLoading}
-                        className="gap-2 min-w-24"
+                        className="w-[120px] justify-center"
                     >
-                        {isLoading ? (
-                            <>
-                                <UpdateIcon className="h-4 w-4 animate-spin" />
-                                Optimizing...
-                            </>
-                        ) : (
-                            <>
-                                <ReloadIcon className="h-4 w-4" />
-                                Optimize
-                            </>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {isLoading ? (
+                                <>
+                                    <UpdateIcon className="h-4 w-4 animate-spin" />
+                                    <span>Optimizing</span>
+                                </>
+                            ) : (
+                                <>
+                                    <ReloadIcon className="h-4 w-4" />
+                                    <span>Optimize</span>
+                                </>
+                            )}
+                        </div>
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Optimize text with AI</TooltipContent>
