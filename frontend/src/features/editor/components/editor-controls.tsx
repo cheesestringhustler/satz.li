@@ -34,8 +34,7 @@ export function EditorControls({
     className
 }: EditorControlsProps) {
     return (
-        <div className={cn("flex items-center gap-2 justify-end w-full", className)}>
-            <div className="flex-1" />
+        <div className={cn("flex items-center gap-2 justify-end", className)}>
             <div className="flex items-center gap-2">
                 <Tooltip>
                     <TooltipTrigger asChild>

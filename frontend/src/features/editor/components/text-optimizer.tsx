@@ -349,7 +349,7 @@ function TextOptimizer() {
                     <CardContent className="p-6">
                         <div className="flex flex-col gap-6">
                             {/* Controls Section */}
-                            <div className="flex items-center gap-4 border-b pb-4">
+                            <div className="flex flex-wrap items-center gap-4 border-b pb-4 ">
                                 <ModelSelector
                                     model={modelType}
                                     setModel={setModelType}
@@ -377,6 +377,7 @@ function TextOptimizer() {
                                         </TooltipContent>
                                     </Tooltip>
                                 </div>
+                                <div className="flex-1 hidden md:block" />
                                 <EditorControls
                                     isLoading={isLoading}
                                     isOptimizationComplete={textState.isOptimizationComplete}
@@ -398,7 +399,7 @@ function TextOptimizer() {
                                         <TabsTrigger value="prompt">Optimize</TabsTrigger>
                                         <TabsTrigger value="context">Context</TabsTrigger>
                                     </TabsList>
-                                    <div className={`text-xs ${isOverLimit || isContextOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                    <div className={`text-xs text-right pl-2 ${isOverLimit || isContextOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}>
                                         Total Characters: {textState.text.length + (context?.length || 0)}/{totalCharLimit}
                                     </div>
                                 </div>
