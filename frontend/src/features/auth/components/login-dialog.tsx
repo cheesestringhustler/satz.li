@@ -101,11 +101,11 @@ export function LoginDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Login</Button>
+        <Button>Sign Up / Login ✨</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Login</DialogTitle>
+          <DialogTitle>Sign Up / Login via magic link ✨</DialogTitle>
           <DialogDescription>
             {step === "request" 
               ? "Enter your email address to receive a magic link for logging in."
